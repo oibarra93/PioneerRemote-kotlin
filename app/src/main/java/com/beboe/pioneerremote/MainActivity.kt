@@ -45,10 +45,6 @@ class MainActivity : AppCompatActivity() {
 
 
         //Initialize the network connection by scanning the local network
-        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val network = connectivityManager.activeNetwork
-        val networkprops = connectivityManager.getLinkProperties(network)
-        val ipv4 = networkprops?.linkAddresses?.get(1).toString().split(".","/")
         var targetIP = ""
         val mainLooper = Looper.getMainLooper()
         var ip :MutableList<String> = mutableListOf()
@@ -68,7 +64,7 @@ class MainActivity : AppCompatActivity() {
                     do{
                         try{
                             client = Socket()
-                            client.connect(InetSocketAddress(prefix + i.toString(), 8102),80)
+                            client.connect(InetSocketAddress(prefix + i.toString(), 8102),100)
                         }
                         catch(e:Exception) {
                             print(e.toString())
