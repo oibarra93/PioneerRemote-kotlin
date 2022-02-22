@@ -8,183 +8,196 @@
     tools:context=".MainActivity">
 
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraintLayout4"
-        android:layout_width="0dp"
-        android:layout_height="200dp"
-        android:layout_marginTop="8dp"
-        android:padding="5dp"
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/constraintLayout5"
-            android:layout_width="200dp"
-            android:layout_height="0dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:layout_marginBottom="5dp"
+            android:baselineAligned="false"
+            android:orientation="horizontal"
+            android:paddingStart="2dp"
+            android:paddingEnd="2dp">
 
-            <TextView
-                android:id="@+id/textView2"
+            <LinearLayout
+                android:id="@+id/linearLayout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Enter Custom Commands"
-                android:textAlignment="center"
-                android:textColor="#FFFFFF"
-                android:textSize="20dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.52"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                android:layout_marginRight="2dp"
+                android:layout_weight=".5"
+                android:baselineAligned="false"
+                android:orientation="vertical"
+                android:paddingLeft="0dp"
+                android:paddingRight="2dp">
 
-            <EditText
-                android:id="@+id/editTextCommand"
+                <TextView
+                    android:id="@+id/textView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Hostname"
+                    android:textColor="#FFFFFF"
+                    android:textSize="20dp" />
+
+                <EditText
+                    android:id="@+id/editTextHostname"
+                    style="@style/Widget.AppCompat.AutoCompleteTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="#FFFFFF"
+                    android:ems="10"
+                    android:inputType="textPersonName"
+                    android:textColor="#000000"
+                    android:textColorHint="#AAAAAA"
+                    android:textIsSelectable="true"
+                    android:textSize="24dp" />
+
+                <Button
+                    android:id="@+id/btnConnect"
+                    style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="20dp"
+                    android:text="Connect"
+                    android:textSize="20dp" />
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:ems="10"
-                android:inputType="textPersonName"
-                android:textColor="#FFFFFF"
-                android:textIsSelectable="true"
-                android:textSize="20dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView2" />
+                android:layout_marginLeft="2dp"
+                android:layout_weight=".5"
+                android:orientation="vertical"
+                android:paddingLeft="2dp"
+                android:paddingRight="0dp"
+                app:layout_constraintEnd_toStartOf="@+id/linearLayout">
 
-            <Button
-                android:id="@+id/btnSendCommand"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="50dp"
-                android:layout_marginTop="20dp"
-                android:text="Send"
-                android:textSize="20dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/editTextCommand"
-                app:layout_constraintVertical_bias="0.0"
-                tools:ignore="OnClick" />
+                <TextView
+                    android:id="@+id/textView2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Custom Commands"
+                    android:textAlignment="center"
+                    android:textColor="#FFFFFF"
+                    android:textSize="20dp" />
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                <EditText
+                    android:id="@+id/editTextCommand"
+                    style="Widget.AppCompat.AutoCompleteTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="#FFFFFF"
+                    android:ems="10"
+                    android:inputType="textPersonName"
+                    android:textColor="#000000"
+                    android:textIsSelectable="true"
+                    android:textSize="24dp" />
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/constraintLayout"
-            android:layout_width="200dp"
-            android:layout_height="0dp"
-            android:background="#000000"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/constraintLayout5"
-            app:layout_constraintHorizontal_bias="0.013"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.0">
+                <Button
+                    android:id="@+id/btnSendCommand"
+                    style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="20dp"
+                    android:text="Send"
+                    android:textSize="20dp"
+                    tools:ignore="OnClick" />
 
-            <TextView
-                android:id="@+id/textView"
-                android:layout_width="wrap_content"
-                android:layout_height="50dp"
-                android:layout_marginTop="16dp"
-                android:background="#00FFFFFF"
-                android:text="Enter the Hostname"
-                android:textColor="#FFFFFF"
-                android:textSize="20dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+            </LinearLayout>
 
-            <Button
-                android:id="@+id/btnConnect"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="50dp"
-                android:layout_marginTop="20dp"
-                android:text="Connect"
-                android:textSize="20dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/editTextHostname"
-                app:layout_constraintVertical_bias="0.0" />
-
-            <EditText
-                android:id="@+id/editTextHostname"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:ems="10"
-                android:inputType="textPersonName"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#AAAAAA"
-                android:textIsSelectable="true"
-                android:textSize="20dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraintLayout2"
-        android:layout_width="415dp"
-        android:layout_height="0dp"
-        android:paddingTop="20dp"
-        app:layout_constraintBottom_toTopOf="@+id/divider3"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/divider4">
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_gravity="center"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
-            android:orientation="vertical"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            android:orientation="vertical">
 
             <com.google.android.material.chip.ChipGroup
                 android:id="@+id/chipGroup"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center|center_horizontal"
                 android:clickable="false"
-                app:checkedChip="@id/btnChromecast"
-                app:chipSpacingHorizontal="10dp"
-                app:chipSpacingVertical="12dp"
+                app:checkedChip="@id/btnBD"
+                app:chipSpacingHorizontal="30dp"
+                app:chipSpacingVertical="4dp"
                 app:selectionRequired="true"
                 app:singleSelection="true">
 
 
                 <com.google.android.material.chip.Chip
-                    android:id="@+id/btnChromecast"
+                    android:id="@+id/btnBD"
                     style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Chromecast"
+                    android:checkable="true"
+                    android:text="BD" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/btnDVD"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checkable="true"
+                    android:text="DVD" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/btnSat"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checkable="true"
+                    android:text="SAT/CBL" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/btnHDMI"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="HMDI "
+                    app:chipIcon="@android:drawable/ic_menu_rotate"
+                    app:chipIconEnabled="true" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/btniPod"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="iPod/USB"
                     android:textSize="20dp" />
 
                 <com.google.android.material.chip.Chip
-                    android:id="@+id/btnPS4"
+                    android:id="@+id/btnBT"
                     style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="PS4"
+                    android:text="BT"
                     android:textSize="20dp" />
 
                 <com.google.android.material.chip.Chip
-                    android:id="@+id/btnBluetooth"
+                    android:id="@+id/btnMHL"
                     style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Bluetooth"
+                    android:text="MHL"
                     android:textSize="20dp" />
 
                 <com.google.android.material.chip.Chip
@@ -196,11 +209,21 @@
                     android:textSize="20dp" />
 
                 <com.google.android.material.chip.Chip
-                    android:id="@+id/btnPC"
+                    android:id="@+id/btnNet"
                     style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="PC"
+                    android:text="Internet Radio"
+                    android:textSize="20dp"
+                    app:chipIcon="@android:drawable/ic_menu_rotate"
+                    app:chipIconVisible="true" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/btnTuner"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tuner"
                     android:textSize="20dp" />
 
                 <com.google.android.material.chip.Chip
@@ -208,8 +231,26 @@
                     style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="TV"
-                    android:textSize="20dp" />
+                    android:text="TV" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/btnCD"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checkable="true"
+                    android:text="CD" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/btnCyclic"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checkable="true"
+                    android:text="All"
+                    app:checkedIconEnabled="false"
+                    app:chipIcon="@android:drawable/ic_menu_rotate"
+                    app:chipIconEnabled="true" />
 
             </com.google.android.material.chip.ChipGroup>
 
@@ -225,7 +266,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight=".5"
-                    android:checked="true"
+                    android:checked="false"
                     android:text="ToggleButton"
                     android:textOff="Power off"
                     android:textOn="Power On"
@@ -244,6 +285,7 @@
 
 
             </LinearLayout>
+
             <SeekBar
                 android:id="@+id/seekBarVolume"
                 style="@android:style/Widget.SeekBar"
@@ -253,100 +295,56 @@
                 android:rotation="0" />
         </LinearLayout>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="5dp"
+            android:background="@drawable/borders"
+            android:fillViewport="true"
+            android:isScrollContainer="true"
+            android:nestedScrollingEnabled="true"
+            android:overScrollMode="ifContentScrolls"
+            android:scrollbarAlwaysDrawVerticalTrack="true"
+            android:scrollbarStyle="outsideOverlay"
+            android:scrollbars="vertical"
+            android:textAlignment="center"
+            android:textDirection="ltr">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraintLayout3"
-        android:layout_width="400dp"
-        android:layout_height="213dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textInputLayout"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <ScrollView
+            <TextView
+                android:id="@+id/txtboxResponse"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:isScrollContainer="true"
-                android:nestedScrollingEnabled="true"
-                android:overScrollMode="ifContentScrolls"
+                android:layout_margin="10dp"
+                android:duplicateParentState="false"
+                android:ems="10"
+                android:enabled="true"
+                android:fadeScrollbars="false"
+                android:fontFamily="@font/courier_prime"
+                android:gravity="bottom"
+                android:isScrollContainer="false"
+                android:lines="5"
+                android:maxLines="5"
+                android:nestedScrollingEnabled="false"
+                android:overScrollMode="always"
+                android:scrollIndicators="right"
+                android:scrollbarAlwaysDrawHorizontalTrack="true"
                 android:scrollbarAlwaysDrawVerticalTrack="true"
+                android:scrollbarFadeDuration="1000"
+                android:scrollbarSize="6dp"
+                android:scrollbarStyle="outsideOverlay"
                 android:scrollbars="vertical"
-                android:textAlignment="center"
-                android:textDirection="ltr">
+                android:scrollHorizontally="false"
+                android:selectAllOnFocus="false"
+                android:text="Response:"
+                android:textAlignment="gravity"
+                android:textColor="#FFFFFF"
+                android:textIsSelectable="true"
+                android:textSize="18sp"
+                android:verticalScrollbarPosition="right" />
+        </ScrollView>
 
-                <TextView
-                    android:id="@+id/txtboxResponse"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginEnd="8dp"
-                    android:layout_weight="1"
-                    android:duplicateParentState="false"
-                    android:ems="10"
-                    android:enabled="true"
-                    android:fadeScrollbars="false"
-                    android:gravity="bottom"
-                    android:isScrollContainer="true"
-                    android:lines="5"
-                    android:nestedScrollingEnabled="true"
-                    android:overScrollMode="ifContentScrolls"
-                    android:scrollbarAlwaysDrawHorizontalTrack="true"
-                    android:scrollbarAlwaysDrawVerticalTrack="true"
-                    android:scrollbarFadeDuration="0"
-                    android:scrollbarSize="6dp"
-                    android:scrollbarStyle="outsideInset"
-                    android:scrollbars="vertical"
-                    android:scrollHorizontally="false"
-                    android:selectAllOnFocus="false"
-                    android:text="Response:"
-                    android:textAlignment="gravity"
-                    android:textColor="#FFFFFF"
-                    android:textSize="14sp"
-                    android:verticalScrollbarPosition="defaultPosition" />
-            </ScrollView>
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!--<TextView
-            android:id="@+id/txtboxResponse"
-            android:layout_width="380dp"
-            android:layout_height="164dp"
-            android:layout_marginTop="16dp"
-            android:longClickable="false"
-            android:lines="5"
-            android:scrollbars="vertical"
-            android:text="Response:"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />-->
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <View
-        android:id="@+id/divider3"
-        android:layout_width="1005dp"
-        android:layout_height="1dp"
-        android:layout_marginBottom="8dp"
-        android:background="?android:attr/listDivider"
-        app:layout_constraintBottom_toTopOf="@+id/constraintLayout3"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <View
-        android:id="@+id/divider4"
-        android:layout_width="1005dp"
-        android:layout_height="1dp"
-        android:background="?android:attr/listDivider"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/constraintLayout4" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

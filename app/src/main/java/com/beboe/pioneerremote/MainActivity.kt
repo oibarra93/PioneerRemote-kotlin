@@ -1,15 +1,17 @@
 package com.beboe.pioneerremote
 
-import android.content.Context
-import android.net.ConnectivityManager
 import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.text.method.ScrollingMovementMethod
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -17,6 +19,7 @@ import java.net.DatagramSocket
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
+import kotlinx.coroutines.*
 
 class MainActivity : AppCompatActivity() {
     companion object{
@@ -32,16 +35,24 @@ class MainActivity : AppCompatActivity() {
         var txtInput = findViewById<EditText>(R.id.editTextHostname)
         var btnSendCommand = findViewById<Button>(R.id.btnSendCommand)
         var editTextCommand = findViewById<EditText>(R.id.editTextCommand)
-        var btnPS4 = findViewById<Button>(R.id.btnPS4)
-        var btnChromecast = findViewById<Chip>(R.id.btnChromecast)
-        var btnPC = findViewById<Chip>(R.id.btnPC)
+        var btnBT = findViewById<Button>(R.id.btnBT)
+        var btniPod = findViewById<Chip>(R.id.btniPod)
+        var btnNet = findViewById<Chip>(R.id.btnNet)
         var btnSpotify = findViewById<Chip>(R.id.btnSpotify)
+        var btnTuner = findViewById<Chip>(R.id.btnTuner)
+        var btnMHL = findViewById<Chip>(R.id.btnMHL)
+        var btnBD = findViewById<Chip>(R.id.btnBD)
+        var btnSat = findViewById<Chip>(R.id.btnSat)
+        var btnHDMI = findViewById<Chip>(R.id.btnHDMI)
         var btnTV = findViewById<Chip>(R.id.btnTV)
-        var btnBluetooth = findViewById<Chip>(R.id.btnBluetooth)
+        var btnCD = findViewById<Chip>(R.id.btnCD)
+        var btnAll =findViewById<Chip>(R.id.btnCyclic)
+        var btnDVD = findViewById<Chip>(R.id.btnDVD)
         var btnTogglePower = findViewById<ToggleButton>(R.id.toggleButtonPower)
         var btnMute = findViewById<ToggleButton>(R.id.btnMute)
         val seek = findViewById<SeekBar>(R.id.seekBarVolume)
         val inputGroup = findViewById<ChipGroup>(R.id.chipGroup)
+        txtOutput.movementMethod = ScrollingMovementMethod()
 
 
         //Initialize the network connection by scanning the local network
@@ -49,69 +60,318 @@ class MainActivity : AppCompatActivity() {
         val mainLooper = Looper.getMainLooper()
         var ip :MutableList<String> = mutableListOf()
         var prefix = ""
-        Thread(Runnable {
 
+        fun getStatus() = GlobalScope.launch(Dispatchers.IO) {
+            Thread.sleep(100)
+            var input = ""
+            if (client.isConnected) {
+                do {
+                    try {
+                        client.outputStream.write(("?f\r?f\r").toByteArray())
+                        input = BufferedReader(InputStreamReader(client.inputStream)).readLine()
+                    } catch (e: IOException) {
+                        Toast.makeText(
+                            this@MainActivity,
+                            "Could not fetch input",
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                    }
+                } while (!(input.contains("FN")))
+            }
+            launch(Dispatchers.Main) {
+                if (client.isConnected) {
+                    when (input) {
+                        "FN04" -> inputGroup.check(R.id.btnDVD)
+                        "FN33" -> inputGroup.check(R.id.btnBT)
+                        "FN06" -> inputGroup.check(R.id.btnSat)
+                        "FN53" -> inputGroup.check(R.id.btnSpotify)
+                        "FN02" -> inputGroup.check(R.id.btnTuner)
+                        "FN05" -> inputGroup.check(R.id.btnTV)
+                        "FN25" -> inputGroup.check(R.id.btnBD)
+                        "FN17" -> inputGroup.check(R.id.btniPod)
+                        "FN34" -> inputGroup.check(R.id.btnMHL)
+                        "FN44" -> inputGroup.check(R.id.btnNet)
+                        "FN45" -> inputGroup.check(R.id.btnNet)
+                        "FN38" -> inputGroup.check(R.id.btnNet)
+                        "FN41" -> inputGroup.check(R.id.btnNet)
+                        "FN01" -> inputGroup.check(R.id.btnCD)
+                        "FN19" -> {
+                            inputGroup.check(R.id.btnHDMI)
+                            btnHDMI.text = "HDMI 1"
+                        }
+                        "FN20" -> {
+                            inputGroup.check(R.id.btnHDMI)
+                            btnHDMI.text = "HDMI 2"
+                        }
+                        "FN21" -> {
+                            inputGroup.check(R.id.btnHDMI)
+                            btnHDMI.text = "HDMI 3"
+                        }
+                        "FN22" -> {
+                            inputGroup.check(R.id.btnHDMI)
+                            btnHDMI.text = "HDMI 4"
+                        }
+                        "FN23" -> {
+                            inputGroup.check(R.id.btnHDMI)
+                            btnHDMI.text = "HDMI 5/MHL"
+                        }
+                    }
+                    Toast.makeText(this@MainActivity, "Input fetched: "+input, Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Could not fetch input, not connected.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }}
+        }
+        fun init() = GlobalScope.launch(Dispatchers.IO) {
+            //Get local ip
             DatagramSocket().use { socket ->
                 socket.connect(InetAddress.getByName("8.8.8.8"), 10002)
                 ip = socket.getLocalAddress().getHostAddress().split(".") as MutableList<String>
             }
+            //Go through local addresses to find receiver
+            txtOutput.text = ip.toString()
+            prefix = ip[0] + "." + ip[1] + "." + ip[2] + "."
 
-            Handler(mainLooper).post{
-                txtOutput.text = ip.toString()
-                prefix = ip[0]+"."+ip[1]+"."+ip[2]+"."
-                Thread(Runnable{
-                    var i = 1
-                    do{
-                        try{
-                            client = Socket()
-                            client.connect(InetSocketAddress(prefix + i.toString(), 8102),100)
-                        }
-                        catch(e:Exception) {
-                            print(e.toString())
-                            i++
-                        }
-                    }
-                    while (!(client.isConnected)or(i > 254))
-                    targetIP = prefix + i.toString()
-                    client.close()
-                    connect(txtOutput, listOf(targetIP,"8102")).execute()
-
-                    Handler(mainLooper).post {
-                        checkVolume(seek).execute()
-                        checkInput(inputGroup).execute()
-                        checkPower(btnTogglePower).execute()
-                    }
-                }).start()
+            var i = 1
+            do {
+                try {
+                    client = Socket()
+                    client.connect(InetSocketAddress(prefix + i.toString(), 8102), 200)
+                } catch (e: Exception) {
+                    print(e.toString())
+                    i++
+                }
+            } while (!(client.isConnected) or (i > 254))
+            targetIP = prefix + i.toString()
+            client = Socket()
+            try{
+            client.connect(InetSocketAddress(targetIP, 8102), 150)
+                if(client.isConnected){
+                client.keepAlive = true}}
+            catch (e:IOException){
+                //Toast.makeText(this@MainActivity, "Could not connect", Toast.LENGTH_SHORT)
+                cancel("Could not connect")
             }
-        }).start()
 
 
+            //Fetch input status
+            var input = ""
+            Thread.sleep(50)
+            if (client.isConnected) {
+                try {
 
+                    client.outputStream.write(("?f\r?f\r").toByteArray())
+                    input = BufferedReader(InputStreamReader(client.inputStream)).readLine()
+                } catch (e: IOException) {
+                    Toast.makeText(this@MainActivity, "Could not fetch input", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            }
+
+            //Fetch volume status
+            var volume = ""
+            val regex = Regex("[VOL]+[0-9]+")
+            if (client.isConnected) {
+                var i = 0
+                do{
+                    try {
+                        client.outputStream.write("?v\r?v\r".toByteArray())
+                        var response = BufferedReader(InputStreamReader(client.inputStream)).readLine()
+                        var extract = regex.find(response)
+                        volume = extract?.value.toString()
+                        i++
+                    } catch (e: IOException) {
+                        Toast.makeText(this@MainActivity, "Could not fetch volume", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                }while(!(volume.contains("VOL")) or (i > 25))
+            }
+            //Fetch power status
+            var power = false
+            if (client.isConnected) {
+                var powerresponse = ""
+                var i = 0
+                do {
+                    try {
+                        client.outputStream.write("?p\r?p\r".toByteArray())
+                        powerresponse =
+                            BufferedReader(InputStreamReader(client.inputStream)).readLine()
+                        if (powerresponse.contains("PWR0")
+                        ) {
+                            power = true
+                        }
+                        i++
+                    } catch (e: IOException) {
+                        Toast.makeText(
+                            this@MainActivity,
+                            "Could not fetch power",
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                    }
+                } while (!(powerresponse.contains("PWR")) or (i > 25))
+            }
+            //Fetch mute status
+            var mute = false
+            if(client.isConnected){
+                var i = 0
+                var muteresponse = ""
+                do{
+                    try{
+                        client.outputStream.write("?m\r".toByteArray())
+                        muteresponse =
+                            BufferedReader(InputStreamReader(client.inputStream)).readLine()
+                        if (muteresponse.contains("MUT0")
+                        ) {
+                            mute = true
+                        }
+                        i++
+                    }
+                    catch(e:IOException){
+                        Toast.makeText(this@MainActivity, "Could not fetch mute status", Toast.LENGTH_SHORT)
+                    }
+                }while(!(muteresponse.contains("MUT"))or(i > 25))
+            }
+            //Update UI on main thread
+            launch(Dispatchers.Main) {
+                if (client.isConnected) {
+                    when (input) {
+                        "FN04" -> inputGroup.check(R.id.btnDVD)
+                        "FN33" -> inputGroup.check(R.id.btnBT)
+                        "FN06" -> inputGroup.check(R.id.btnSat)
+                        "FN53" -> inputGroup.check(R.id.btnSpotify)
+                        "FN02" -> inputGroup.check(R.id.btnTuner)
+                        "FN05" -> inputGroup.check(R.id.btnTV)
+                        "FN25" -> inputGroup.check(R.id.btnBD)
+                        "FN17" -> inputGroup.check(R.id.btniPod)
+                        "FN34" -> inputGroup.check(R.id.btnMHL)
+                        "FN44" -> inputGroup.check(R.id.btnNet)
+                        "FN45" -> inputGroup.check(R.id.btnNet)
+                        "FN38" -> inputGroup.check(R.id.btnNet)
+                        "FN41" -> inputGroup.check(R.id.btnNet)
+                        "FN01" -> inputGroup.check(R.id.btnCD)
+                        "FN19" -> {
+                            inputGroup.check(R.id.btnHDMI)
+                            btnHDMI.text = "HDMI 1"
+                        }
+                        "FN20" -> {
+                            inputGroup.check(R.id.btnHDMI)
+                            btnHDMI.text = "HDMI 2"
+                        }
+                        "FN21" -> {
+                            inputGroup.check(R.id.btnHDMI)
+                            btnHDMI.text = "HDMI 3"
+                        }
+                        "FN22" -> {
+                            inputGroup.check(R.id.btnHDMI)
+                            btnHDMI.text = "HDMI 4"
+                        }
+                        "FN23" -> {
+                            inputGroup.check(R.id.btnHDMI)
+                            btnHDMI.text = "HDMI 5/MHL"
+                        }
+                    }
+                    Toast.makeText(this@MainActivity, "Input fetched", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Could not fetch input, not connected.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                btnTogglePower.isChecked = power
+                var extract = "[0-9]+".toRegex().find(volume)
+                var volumeval = extract?.value.toString()
+                seek.progress = volumeval.toInt()
+                btnMute.isChecked = mute
+            }
+        }
+        try{
+            init().start()
+        }
+        catch(e:IOException){
+            txtOutput.text = txtOutput.text.toString() + "\nCould not find receiver"
+        }
+        fun connect(ip:List<String>) = GlobalScope.launch(Dispatchers.IO) {
+            client = Socket()
+            try {
+                client.connect(InetSocketAddress(ip[0], ip[1].toInt()), 200)
+                if(client.isConnected)
+                    client.keepAlive = true
+            } catch (e: IOException) {
+                cancel("Could not connect")
+                //txtOutput.text = txtOutput.text.toString() + "\nCould not connect"
+            }
+            launch(Dispatchers.Main) {
+                if (client.isConnected) {
+                    txtOutput.text =
+                        txtOutput.text.toString() + "\nSuccessfully connected to " + ip[0] + ":" + ip[1]
+                    try{
+                        getStatus().start()
+                    }
+                    catch(e:IOException){
+                        txtOutput.text = txtOutput.text.toString() + "\nCould not fetch status"
+                    }
+                }
+            }
+        }
         //Button Listener actions
-        btnPS4.setOnClickListener {
-            changeInput(txtOutput,"05fn").execute()
+        btnBT.setOnClickListener {
+            changeInput(txtOutput,"33fn").execute()
 
         }
-        btnChromecast.setOnClickListener {
-            changeInput(txtOutput,"04fn").execute()
+        btniPod.setOnClickListener {
+            changeInput(txtOutput,"17fn").execute()
 
         }
-        btnPC.setOnClickListener {
-            changeInput(txtOutput,"06fn").execute()
+        btnNet.setOnClickListener {
+            changeInput(txtOutput,"26fn").execute()
 
         }
         btnSpotify.setOnClickListener {
             changeInput(txtOutput,"53fn").execute()
 
         }
-        btnBluetooth.setOnClickListener {
-            changeInput(txtOutput,"33fn").execute()
+        btnMHL.setOnClickListener {
+            changeInput(txtOutput,"34fn").execute()
 
         }
-        btnTV.setOnClickListener {
+        btnTuner.setOnClickListener {
+            changeInput(txtOutput,"02fn").execute()
+
+        }
+        btnAll.setOnClickListener{
+            changeInput(txtOutput,"fu").execute()
+            try{
+                getStatus().start()
+            }
+            catch(e:IOException){
+                txtOutput.text = txtOutput.text.toString() + "\nError fetching status"
+            }
+        }
+        btnBD.setOnClickListener{
+            changeInput(txtOutput,"25fn").execute()
+        }
+        btnDVD.setOnClickListener{
+            changeInput(txtOutput,"04fn").execute()
+        }
+        btnSat.setOnClickListener{
+            changeInput(txtOutput,"06fn").execute()
+        }
+        btnHDMI.setOnClickListener{
+            changeInput(txtOutput,"31fn").execute()
+        }
+        btnTV.setOnClickListener{
+            changeInput(txtOutput,"05fn").execute()
+        }
+        btnCD.setOnClickListener{
             changeInput(txtOutput,"01fn").execute()
-
         }
+
         btnConnect.setOnClickListener {
             var ip: MutableList<String> = mutableListOf<String>()
             var textToAdd = txtInput.text.toString().split(" ",limit = 0)
@@ -121,16 +381,27 @@ class MainActivity : AppCompatActivity() {
             }
             else if(textToAdd.size == 1){
                 if(textToAdd[0].isNullOrEmpty()) {
-                    ip.addAll(arrayOf("192.168.0.21", "2323"))
+                    txtOutput.text = txtOutput.text.toString() + "\nYou must specify a host"
+                    ip.add("192.168.0.21")
+                    ip.add("8102")
+                    txtOutput.text = ip.toString()
                 }
                 else{
                     ip.add(textToAdd[0])
-                    ip.add("2323")
+                    ip.add("8102")
                 }
             }
 
             txtOutput.text = ip.toString()
-            connect(txtOutput, ip).execute()
+            if (client.isConnected){
+                client.close()
+            }
+            try {
+                connect(ip).start()
+            }
+            catch(e:IOException){
+                txtOutput.text = txtOutput.text.toString() + "\nCould not connect"
+            }
         }
         btnSendCommand.setOnClickListener {
             var command = editTextCommand.text.toString().trim()
@@ -155,7 +426,10 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
                 Handler(mainLooper).post {
-                    txtOutput.text = txtOutput.text.toString() + "\nMute inverted"
+                    when(btnMute.isChecked) {
+                        true -> txtOutput.text = txtOutput.text.toString() + "\nMute on"
+                        false -> txtOutput.text = txtOutput.text.toString() + "\nMute off"
+                    }
                 }}
             ).start()
         }
@@ -185,35 +459,6 @@ class MainActivity : AppCompatActivity() {
         })
 
     }
-
-    inner class connect(textView: TextView, input: List<out String>) : AsyncTask<Unit, Unit, String>() {
-        val innerTextView: TextView? = textView
-        var text = ""
-        val ip = input?.get(0)
-        val port = input?.get(1).toInt()
-        override fun doInBackground(vararg p0: Unit?): String? {
-            if (client.isClosed){
-                try{
-                        client = Socket()
-                        client.connect(InetSocketAddress(ip, port),1000)
-                        client.outputStream.write("\r".toByteArray())
-                        text = BufferedReader(InputStreamReader(client.inputStream)).readLine()
-                        client.keepAlive = true
-                    }
-                catch (e : Exception){
-                    Toast.makeText(this@MainActivity, "Could not connect!", Toast.LENGTH_SHORT).show()
-                }
-                }
-
-
-
-            return null
-        }
-        override fun onPostExecute(result: String?) {
-            super.onPostExecute(result)
-            innerTextView?.text = innerTextView?.text.toString() + "\n" + text + "\nConnected to $ip:$port successfully"
-        }
-    }
     inner class sendCommand(textView: TextView, command: String) : AsyncTask<Unit, Unit, String>() {
         val innerTextView: TextView? = textView
         var text = ""
@@ -227,7 +472,6 @@ class MainActivity : AppCompatActivity() {
                 }
                 catch(e:IOException){
                     Toast.makeText(this@MainActivity, "sendCommand failed", Toast.LENGTH_SHORT).show()
-
                 }
             }
             return null
@@ -238,7 +482,6 @@ class MainActivity : AppCompatActivity() {
                 innerTextView?.text = innerTextView?.text.toString() + "\n" + text + "\nSent " + command.toString() +  " successfully"
                 Toast.makeText(this@MainActivity, "sendCommand executed", Toast.LENGTH_SHORT).show()
             }
-
             else{
                 innerTextView?.text = innerTextView?.text.toString() + "\n" + text + "\nNot connected!"
             }
@@ -257,145 +500,13 @@ class MainActivity : AppCompatActivity() {
                 }
                 catch(e:IOException){
                     Toast.makeText(this@MainActivity, "changeInput Failed", Toast.LENGTH_SHORT).show()
-
                 }
             }
             return null
         }
         override fun onPostExecute(result: String?) {
             super.onPostExecute(result)
-            if(client.isConnected){
-                innerTextView?.text = innerTextView?.text.toString() + "\n" + text + "\nInput selected: " + command.toString()
-            }
-            else{
-                innerTextView?.text = innerTextView?.text.toString() + "\n" + text + "\nNot connected!"
-            }
-            //Toast.makeText(this@MainActivity, "sendCommand executed", Toast.LENGTH_SHORT).show()
+
         }
     }
-    inner class checkVolume(volume:SeekBar) : AsyncTask<Unit, Unit, String>() {
-        var text = ""
-        var volume: SeekBar? = volume
-        var m = ""
-        val regex = """(\d+)""".toRegex()
-
-        override fun doInBackground(vararg p0: Unit?): String? {
-            if (client.isConnected) {
-                try {
-                    do{
-                    client.outputStream.write(("?v" + "\r").toByteArray())
-                    text = BufferedReader(InputStreamReader(client.inputStream)).readLine()
-                    val value = regex.find(text)
-                    m = value?.value.toString()} while(m.contains("04"))
-                }
-                catch(e:IOException){
-                    Toast.makeText(this@MainActivity, "Could not fetch Volume", Toast.LENGTH_SHORT).show()
-                }
-            }
-            return null
-        }
-        override fun onPostExecute(result: String?) {
-            super.onPostExecute(result)
-            if(client.isConnected){
-                volume?.setProgress(m.toInt())
-                Toast.makeText(this@MainActivity, "Volume fetched", Toast.LENGTH_SHORT).show()
-            }
-
-            else{
-                Toast.makeText(this@MainActivity, "Could not fetch volume, not connected.", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-    inner class checkInput(group:ChipGroup) : AsyncTask<Unit, Unit, String>() {
-        var text = ""
-        var group: ChipGroup? = group
-        var m = ""
-        val regex = """(\d+)""".toRegex()
-
-        override fun doInBackground(vararg p0: Unit?): String? {
-            if (client.isConnected) {
-                try {
-
-                        client.outputStream.write(("?f" + "\r").toByteArray())
-                        text = BufferedReader(InputStreamReader(client.inputStream)).readLine()
-                        val value = regex.find(text)
-                        m = value?.value.toString()
-                }
-                catch(e:IOException){
-                    Toast.makeText(this@MainActivity, "Could not fetch Volume", Toast.LENGTH_SHORT).show()
-                }
-            }
-            return null
-        }
-        override fun onPostExecute(result: String?) {
-            super.onPostExecute(result)
-            if(client.isConnected){
-                when (m){
-                    "04" -> group?.check(R.id.btnChromecast)
-                    "33" -> group?.check(R.id.btnBluetooth)
-                    "06" -> group?.check(R.id.btnPC)
-                    "53" -> group?.check(R.id.btnSpotify)
-                    "01" -> group?.check(R.id.btnTV)
-                    "05" -> group?.check(R.id.btnPS4)
-                }
-                Toast.makeText(this@MainActivity, "Volume fetched", Toast.LENGTH_SHORT).show()
-            }
-
-            else{
-                Toast.makeText(this@MainActivity, "Could not fetch volume, not connected.", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-    inner class checkPower(power:ToggleButton) : AsyncTask<Unit, Unit, String>() {
-        var text = ""
-        var power: ToggleButton? = power
-        var m = ""
-        val regex = """(\d+)""".toRegex()
-
-        override fun doInBackground(vararg p0: Unit?): String? {
-            if (client.isConnected) {
-                try {
-
-                    client.outputStream.write(("?f" + "\r").toByteArray())
-                    text = BufferedReader(InputStreamReader(client.inputStream)).readLine()
-                    val value = regex.find(text)
-                    m = value?.value.toString()
-                }
-                catch(e:IOException){
-                    Toast.makeText(this@MainActivity, "Could not fetch Volume", Toast.LENGTH_SHORT).show()
-                }
-            }
-            return null
-        }
-        override fun onPostExecute(result: String?) {
-            super.onPostExecute(result)
-            if(client.isConnected){
-                if(m.contains("PWR0")){
-                    power?.isChecked = true
-                }
-                else if(m.contains("PWR1")){
-                    power?.isChecked =false
-                }
-                Toast.makeText(this@MainActivity, "Volume fetched", Toast.LENGTH_SHORT).show()
-            }
-
-            else{
-                Toast.makeText(this@MainActivity, "Could not fetch volume, not connected.", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-    inner class checkPorts(prefix: String, targetIP: String) : AsyncTask<Unit, Unit, String>() {
-        var targetIP = String?:targetIP
-        //val prefix = String?:prefix
-        val prefix = "192.168.0."
-        override fun doInBackground(vararg p0: Unit?): String? {
-
-            return null
-        }
-        override fun onPostExecute(result: String?) {
-            super.onPostExecute(result)
-        }
-    }
-
-
 }
