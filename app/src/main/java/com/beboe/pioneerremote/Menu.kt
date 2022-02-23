@@ -52,7 +52,7 @@ class Menu : AppCompatActivity() {
                 cancel("Could not connect")
             }
             launch(Dispatchers.Main) {
-                Toast.makeText(this@Menu,"Connected",Toast.LENGTH_LONG).show()
+                Toast.makeText(this@Menu, "Connected", Toast.LENGTH_LONG).show()
             }
         }
 
@@ -86,97 +86,101 @@ class Menu : AppCompatActivity() {
 
         btnAudioMenu.setOnClickListener {
             GlobalScope.launch(Dispatchers.IO) {
-                    if (MainActivity.client.isConnected) {
-                        MainActivity.client.outputStream.write("apa\r".toByteArray())
-                    }
+                if (MainActivity.client.isConnected) {
+                    MainActivity.client.outputStream.write("apa\r".toByteArray())
+                }
 
             }
         }
         btnVideoMenu.setOnClickListener {
             GlobalScope.launch(Dispatchers.IO) {
-                    if (MainActivity.client.isConnected) {
-                        MainActivity.client.outputStream.write("vpa\r".toByteArray())
-                    }
+                if (MainActivity.client.isConnected) {
+                    MainActivity.client.outputStream.write("vpa\r".toByteArray())
+                }
             }
         }
         btnHomeMenu.setOnClickListener {
             GlobalScope.launch(Dispatchers.IO) {
-                    if (MainActivity.client.isConnected) {
-                        MainActivity.client.outputStream.write("hm\r".toByteArray())
-                    }
+                if (MainActivity.client.isConnected) {
+                    MainActivity.client.outputStream.write("hm\r".toByteArray())
+                }
             }
         }
         btnReturn.setOnClickListener {
             GlobalScope.launch(Dispatchers.IO) {
-                    if (MainActivity.client.isConnected) {
-                        MainActivity.client.outputStream.write("crt\r".toByteArray())
-                    }
-        }}
-        btnOk.setOnClickListener{
-            GlobalScope.launch(Dispatchers.IO){
-                    if(MainActivity.client.isConnected){
-                        MainActivity.client.outputStream.write("cen\r".toByteArray())
-                    }
+                if (MainActivity.client.isConnected) {
+                    MainActivity.client.outputStream.write("crt\r".toByteArray())
                 }
-
-        }
-        btnUp.setOnClickListener{
-            GlobalScope.launch(Dispatchers.IO){
-                    if(MainActivity.client.isConnected){
-                        MainActivity.client.outputStream.write("cup\r".toByteArray())
-                    }
-
             }
         }
-        btnRight.setOnClickListener{
-            GlobalScope.launch(Dispatchers.IO){
-                    if(MainActivity.client.isConnected){
-                        MainActivity.client.outputStream.write("cri\r".toByteArray())
-                    }
+        btnOk.setOnClickListener {
+            GlobalScope.launch(Dispatchers.IO) {
+                if (MainActivity.client.isConnected) {
+                    MainActivity.client.outputStream.write("cen\r".toByteArray())
                 }
             }
-        btnDown.setOnClickListener{
-            GlobalScope.launch(Dispatchers.IO){
-                    if(MainActivity.client.isConnected){
-                        MainActivity.client.outputStream.write("cdn\r".toByteArray())
-                    }
+
+        }
+        btnUp.setOnClickListener {
+            GlobalScope.launch(Dispatchers.IO) {
+                if (MainActivity.client.isConnected) {
+                    MainActivity.client.outputStream.write("cup\r".toByteArray())
                 }
 
             }
-        btnLeft.setOnClickListener{
-            GlobalScope.launch(Dispatchers.IO){
-                if(MainActivity.client.isConnected){
+        }
+        btnRight.setOnClickListener {
+            GlobalScope.launch(Dispatchers.IO) {
+                if (MainActivity.client.isConnected) {
+                    MainActivity.client.outputStream.write("cri\r".toByteArray())
+                }
+            }
+        }
+        btnDown.setOnClickListener {
+            GlobalScope.launch(Dispatchers.IO) {
+                if (MainActivity.client.isConnected) {
+                    MainActivity.client.outputStream.write("cdn\r".toByteArray())
+                }
+            }
+
+        }
+        btnLeft.setOnClickListener {
+            GlobalScope.launch(Dispatchers.IO) {
+                if (MainActivity.client.isConnected) {
                     MainActivity.client.outputStream.write("cle\r".toByteArray())
                 }
-                }
             }
-        btnAuto.setOnClickListener{
-            GlobalScope.launch(Dispatchers.IO){
-                if(MainActivity.client.isConnected){
+        }
+        btnAuto.setOnClickListener {
+            GlobalScope.launch(Dispatchers.IO) {
+                if (MainActivity.client.isConnected) {
                     MainActivity.client.outputStream.write("005sr\r".toByteArray())
                 }
             }
         }
-        btnSurr.setOnClickListener{
-            GlobalScope.launch(Dispatchers.IO){
-                if(MainActivity.client.isConnected){
+        btnSurr.setOnClickListener {
+            GlobalScope.launch(Dispatchers.IO) {
+                if (MainActivity.client.isConnected) {
                     MainActivity.client.outputStream.write("0010sr\r".toByteArray())
                 }
             }
         }
-        btnAdv.setOnClickListener{
-            GlobalScope.launch(Dispatchers.IO){
-                if(MainActivity.client.isConnected){
+        btnAdv.setOnClickListener {
+            GlobalScope.launch(Dispatchers.IO) {
+                if (MainActivity.client.isConnected) {
                     MainActivity.client.outputStream.write("0100sr\r".toByteArray())
                 }
             }
         }
 
-        try{
-            connect().start()
-        }
-        catch(e:IOException){
-            Toast.makeText(this,"Could not connect",Toast.LENGTH_LONG).show()
-        }
+        do {
+            try {
+                connect().start()
+            }
+            catch (e: IOException) {
+                Toast.makeText(this, "Could not connect", Toast.LENGTH_LONG).show()
+            }
+        }while(MainActivity.client.isConnected)
+
         }
     }
