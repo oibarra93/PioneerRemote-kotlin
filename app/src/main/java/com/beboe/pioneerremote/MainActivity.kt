@@ -1,17 +1,22 @@
 package com.beboe.pioneerremote
 
+import android.content.Intent
 import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.text.method.ScrollingMovementMethod
+import android.util.Log
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import co.zsmb.materialdrawerkt.builders.accountHeader
+import co.zsmb.materialdrawerkt.builders.drawer
+import co.zsmb.materialdrawerkt.draweritems.badgeable.primaryItem
+import co.zsmb.materialdrawerkt.draweritems.divider
+import co.zsmb.materialdrawerkt.draweritems.profile.profile
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -19,7 +24,6 @@ import java.net.DatagramSocket
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
-import kotlinx.coroutines.*
 
 class MainActivity : AppCompatActivity() {
     companion object{
@@ -53,6 +57,9 @@ class MainActivity : AppCompatActivity() {
         val seek = findViewById<SeekBar>(R.id.seekBarVolume)
         val inputGroup = findViewById<ChipGroup>(R.id.chipGroup)
         txtOutput.movementMethod = ScrollingMovementMethod()
+        var power = false
+        var volume = ""
+        var mute = false
 
 
         //Initialize the network connection by scanning the local network
@@ -61,7 +68,7 @@ class MainActivity : AppCompatActivity() {
         var ip :MutableList<String> = mutableListOf()
         var prefix = ""
 
-        fun getStatus() = GlobalScope.launch(Dispatchers.IO) {
+        fun getStatus(power:Boolean,volume:String,mute:Boolean) = GlobalScope.launch(Dispatchers.IO) {
             Thread.sleep(100)
             var input = ""
             if (client.isConnected) {
@@ -124,7 +131,14 @@ class MainActivity : AppCompatActivity() {
                         "Could not fetch input, not connected.",
                         Toast.LENGTH_SHORT
                     ).show()
-                }}
+                }
+                btnTogglePower.isChecked = power
+                var extract = "[0-9]+".toRegex().find(volume)
+                var volumeval = extract?.value.toString()
+                seek.progress = volumeval.toInt()
+                btnMute.isChecked = mute
+            }
+
         }
         fun init() = GlobalScope.launch(Dispatchers.IO) {
             //Get local ip
@@ -173,7 +187,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             //Fetch volume status
-            var volume = ""
+            volume = ""
             val regex = Regex("[VOL]+[0-9]+")
             if (client.isConnected) {
                 var i = 0
@@ -191,7 +205,7 @@ class MainActivity : AppCompatActivity() {
                 }while(!(volume.contains("VOL")) or (i > 25))
             }
             //Fetch power status
-            var power = false
+            power = false
             if (client.isConnected) {
                 var powerresponse = ""
                 var i = 0
@@ -216,7 +230,7 @@ class MainActivity : AppCompatActivity() {
                 } while (!(powerresponse.contains("PWR")) or (i > 25))
             }
             //Fetch mute status
-            var mute = false
+            mute = false
             if(client.isConnected){
                 var i = 0
                 var muteresponse = ""
@@ -238,58 +252,10 @@ class MainActivity : AppCompatActivity() {
             }
             //Update UI on main thread
             launch(Dispatchers.Main) {
-                if (client.isConnected) {
-                    when (input) {
-                        "FN04" -> inputGroup.check(R.id.btnDVD)
-                        "FN33" -> inputGroup.check(R.id.btnBT)
-                        "FN06" -> inputGroup.check(R.id.btnSat)
-                        "FN53" -> inputGroup.check(R.id.btnSpotify)
-                        "FN02" -> inputGroup.check(R.id.btnTuner)
-                        "FN05" -> inputGroup.check(R.id.btnTV)
-                        "FN25" -> inputGroup.check(R.id.btnBD)
-                        "FN17" -> inputGroup.check(R.id.btniPod)
-                        "FN34" -> inputGroup.check(R.id.btnMHL)
-                        "FN44" -> inputGroup.check(R.id.btnNet)
-                        "FN45" -> inputGroup.check(R.id.btnNet)
-                        "FN38" -> inputGroup.check(R.id.btnNet)
-                        "FN41" -> inputGroup.check(R.id.btnNet)
-                        "FN01" -> inputGroup.check(R.id.btnCD)
-                        "FN19" -> {
-                            inputGroup.check(R.id.btnHDMI)
-                            btnHDMI.text = "HDMI 1"
-                        }
-                        "FN20" -> {
-                            inputGroup.check(R.id.btnHDMI)
-                            btnHDMI.text = "HDMI 2"
-                        }
-                        "FN21" -> {
-                            inputGroup.check(R.id.btnHDMI)
-                            btnHDMI.text = "HDMI 3"
-                        }
-                        "FN22" -> {
-                            inputGroup.check(R.id.btnHDMI)
-                            btnHDMI.text = "HDMI 4"
-                        }
-                        "FN23" -> {
-                            inputGroup.check(R.id.btnHDMI)
-                            btnHDMI.text = "HDMI 5/MHL"
-                        }
-                    }
-                    Toast.makeText(this@MainActivity, "Input fetched", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(
-                        this@MainActivity,
-                        "Could not fetch input, not connected.",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-                btnTogglePower.isChecked = power
-                var extract = "[0-9]+".toRegex().find(volume)
-                var volumeval = extract?.value.toString()
-                seek.progress = volumeval.toInt()
-                btnMute.isChecked = mute
+                getStatus(power,volume,mute).join()
             }
         }
+
         try{
             init().start()
         }
@@ -311,7 +277,7 @@ class MainActivity : AppCompatActivity() {
                     txtOutput.text =
                         txtOutput.text.toString() + "\nSuccessfully connected to " + ip[0] + ":" + ip[1]
                     try{
-                        getStatus().start()
+                        getStatus(power,volume,mute).join()
                     }
                     catch(e:IOException){
                         txtOutput.text = txtOutput.text.toString() + "\nCould not fetch status"
@@ -347,7 +313,7 @@ class MainActivity : AppCompatActivity() {
         btnAll.setOnClickListener{
             changeInput(txtOutput,"fu").execute()
             try{
-                getStatus().start()
+                getStatus(power, volume, mute).start()
             }
             catch(e:IOException){
                 txtOutput.text = txtOutput.text.toString() + "\nError fetching status"
@@ -457,6 +423,43 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
+
+        drawer{
+
+            accountHeader{
+
+                    profile("Pioneer Remote"){
+                    icon = R.drawable.logo
+                }
+            }
+            primaryItem("Connection") {
+                onClick { _ ->
+                    Log.d("Drawer","Click.")
+                    init().cancel()
+                    getStatus(power, volume, mute).cancel()
+                    val extraIp = ip[0]
+                    val extraPort = ip[1].toInt()
+                    Intent(this@MainActivity, Menu::class.java).also{
+                        it.putExtra("EXTRA_IP",extraIp)
+                        it.putExtra("EXTRA_PORT", extraPort)
+                        startActivity(intent)
+                    }
+
+                    false
+                }
+            }
+            divider{}
+            primaryItem("Home Menu Controls") {
+                onClick { _ ->
+                    Log.d("Drawer","Click.")
+                    val context = this@MainActivity
+                    val intent = Intent(context, Menu::class.java)
+                    context.startActivity(intent)
+                    false
+                }
+            }
+        }
+
 
     }
     inner class sendCommand(textView: TextView, command: String) : AsyncTask<Unit, Unit, String>() {
