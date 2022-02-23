@@ -54,7 +54,8 @@
 
                 <Space
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".25" />
 
                 <ImageButton
                     android:id="@+id/btnUp"
@@ -62,12 +63,16 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_weight=".5"
+                    android:background="#FFFFFF"
                     android:hapticFeedbackEnabled="true"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="5dp"
                     app:srcCompat="@drawable/arrow_up" />
 
                 <Space
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".25" />
             </TableRow>
 
             <TableRow
@@ -77,26 +82,29 @@
                 <ImageButton
                     android:id="@+id/btnLeft"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_gravity="center_vertical"
                     android:layout_weight=".33"
+                    android:background="#FFFFFF"
                     android:hapticFeedbackEnabled="true"
                     app:srcCompat="@drawable/arrow_left" />
 
                 <ImageButton
                     android:id="@+id/btnOk"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight=".33"
+                    android:background="#FFFFFF"
                     android:hapticFeedbackEnabled="true"
                     app:srcCompat="@drawable/ok" />
 
                 <ImageButton
                     android:id="@+id/btnRight"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_gravity="center_vertical"
                     android:layout_weight=".33"
+                    android:background="#FFFFFF"
                     android:hapticFeedbackEnabled="true"
                     app:srcCompat="@drawable/arrow_right" />
             </TableRow>
@@ -107,7 +115,8 @@
 
                 <Space
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".25" />
 
                 <ImageButton
                     android:id="@+id/btnDown"
@@ -115,12 +124,16 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_weight=".5"
+                    android:background="#FFFFFF"
                     android:hapticFeedbackEnabled="true"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="5dp"
                     app:srcCompat="@drawable/arrow_down" />
 
                 <Space
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".25" />
             </TableRow>
 
         </TableLayout>

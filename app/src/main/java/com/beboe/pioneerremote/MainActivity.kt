@@ -339,8 +339,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnConnect.setOnClickListener {
-            var ip: MutableList<String> = mutableListOf<String>()
-            var textToAdd = txtInput.text.toString().split(" ",limit = 0)
+            ip.clear()
+            var textToAdd = txtInput.text.toString().split(" ",":",limit = 0)
             if(textToAdd.size == 2){
                 ip.add(textToAdd[0])
                 ip.add(textToAdd[1])
@@ -348,9 +348,6 @@ class MainActivity : AppCompatActivity() {
             else if(textToAdd.size == 1){
                 if(textToAdd[0].isNullOrEmpty()) {
                     txtOutput.text = txtOutput.text.toString() + "\nYou must specify a host"
-                    ip.add("192.168.0.21")
-                    ip.add("8102")
-                    txtOutput.text = ip.toString()
                 }
                 else{
                     ip.add(textToAdd[0])
@@ -358,17 +355,17 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            txtOutput.text = ip.toString()
-            if (client.isConnected){
-                client.close()
-            }
-            try {
-                connect(ip).start()
-            }
-            catch(e:IOException){
-                txtOutput.text = txtOutput.text.toString() + "\nCould not connect"
+            txtOutput.text = txtOutput.text.toString() +"\n"+ ip.toString()
+            if(ip.size > 0){
+                try {
+                    connect(ip).start()
+                }
+                catch(e:IOException){
+                    txtOutput.text = txtOutput.text.toString() + "\nCould not connect"
+                }
             }
         }
+
         btnSendCommand.setOnClickListener {
             var command = editTextCommand.text.toString().trim()
             sendCommand(txtOutput,command).execute()
@@ -437,6 +434,7 @@ class MainActivity : AppCompatActivity() {
                     Log.d("Drawer","Click.")
                     init().cancel()
                     getStatus(power, volume, mute).cancel()
+                    connect(ip).cancel()
                     val extraIp = ip[0]
                     val extraPort = ip[1].toInt()
                     Intent(this@MainActivity, Menu::class.java).also{
@@ -452,6 +450,9 @@ class MainActivity : AppCompatActivity() {
             primaryItem("Home Menu Controls") {
                 onClick { _ ->
                     Log.d("Drawer","Click.")
+                    init().cancel()
+                    getStatus(power, volume, mute).cancel()
+                    connect(ip).cancel()
                     val context = this@MainActivity
                     val intent = Intent(context, Menu::class.java)
                     context.startActivity(intent)
