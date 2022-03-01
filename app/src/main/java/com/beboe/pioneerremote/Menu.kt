@@ -1,16 +1,16 @@
 package com.beboe.pioneerremote
 
+import android.app.AlertDialog
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import co.zsmb.materialdrawerkt.builders.accountHeader
 import co.zsmb.materialdrawerkt.builders.drawer
 import co.zsmb.materialdrawerkt.draweritems.badgeable.primaryItem
-import co.zsmb.materialdrawerkt.draweritems.badgeable.secondaryItem
 import co.zsmb.materialdrawerkt.draweritems.divider
 import co.zsmb.materialdrawerkt.draweritems.profile.profile
 import kotlinx.coroutines.Dispatchers
@@ -22,9 +22,15 @@ import java.net.InetSocketAddress
 import java.net.Socket
 
 class Menu : AppCompatActivity() {
+    companion object{
+
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_menu)
+        var btnMenuConnect = findViewById<Button>(R.id.btnMenuConnect)
         var btnAudioMenu = findViewById<Button>(R.id.btnAudioMenu)
         var btnVideoMenu = findViewById<Button>(R.id.btnVideoMenu)
         var btnHomeMenu = findViewById<Button>(R.id.btnHomeMenu)
@@ -39,6 +45,11 @@ class Menu : AppCompatActivity() {
         var btnSurr = findViewById<Button>(R.id.btnSurr)
         var ip = intent.getStringExtra("EXTRA_IP")
         val port = intent.getIntExtra("EXTRA_PORT", 8102)
+        var address :MutableList<String> = mutableListOf()
+        if (ip != null) {
+            address.add(ip)
+        }
+        address.add(port.toString())
 
         fun connect() = GlobalScope.launch(Dispatchers.IO) {
             MainActivity.client = Socket()
@@ -52,9 +63,19 @@ class Menu : AppCompatActivity() {
                 cancel("Could not connect")
             }
             launch(Dispatchers.Main) {
-                Toast.makeText(this@Menu, "Connected", Toast.LENGTH_LONG).show()
+                if (MainActivity.client.isConnected)
+                    Toast.makeText(this@Menu, "Connected", Toast.LENGTH_SHORT).show()
             }
         }
+        /*do {
+            try {
+                Toast.makeText(this@Menu, "Connecting...", Toast.LENGTH_SHORT).show()
+                connect().start()
+            }
+            catch (e: IOException) {
+                Toast.makeText(this, "Could not connect", Toast.LENGTH_LONG).show()
+            }
+        }while(MainActivity.client.isConnected)*/
 
         drawer {
             accountHeader() {
@@ -65,7 +86,7 @@ class Menu : AppCompatActivity() {
             primaryItem("Connection") {
                 onClick { _ ->
                     Log.d("Drawer", "Click.")
-                    connect().cancel()
+                    //connect().cancel()
                     val context = this@Menu
                     val intent = Intent(context, MainActivity::class.java)
                     context.startActivity(intent)
@@ -85,102 +106,66 @@ class Menu : AppCompatActivity() {
         }
 
         btnAudioMenu.setOnClickListener {
-            GlobalScope.launch(Dispatchers.IO) {
-                if (MainActivity.client.isConnected) {
-                    MainActivity.client.outputStream.write("apa\r".toByteArray())
-                }
-
-            }
+            MainActivity.sendCommand("apa")
         }
         btnVideoMenu.setOnClickListener {
-            GlobalScope.launch(Dispatchers.IO) {
-                if (MainActivity.client.isConnected) {
-                    MainActivity.client.outputStream.write("vpa\r".toByteArray())
-                }
-            }
+            MainActivity.sendCommand("vpa")
         }
         btnHomeMenu.setOnClickListener {
-            GlobalScope.launch(Dispatchers.IO) {
-                if (MainActivity.client.isConnected) {
-                    MainActivity.client.outputStream.write("hm\r".toByteArray())
-                }
-            }
+            MainActivity.sendCommand("hm")
         }
         btnReturn.setOnClickListener {
-            GlobalScope.launch(Dispatchers.IO) {
-                if (MainActivity.client.isConnected) {
-                    MainActivity.client.outputStream.write("crt\r".toByteArray())
-                }
-            }
+            MainActivity.sendCommand("crt")
         }
         btnOk.setOnClickListener {
-            GlobalScope.launch(Dispatchers.IO) {
-                if (MainActivity.client.isConnected) {
-                    MainActivity.client.outputStream.write("cen\r".toByteArray())
-                }
-            }
-
+            MainActivity.sendCommand("cen")
         }
         btnUp.setOnClickListener {
-            GlobalScope.launch(Dispatchers.IO) {
-                if (MainActivity.client.isConnected) {
-                    MainActivity.client.outputStream.write("cup\r".toByteArray())
-                }
-
-            }
+            MainActivity.sendCommand("cup")
         }
         btnRight.setOnClickListener {
-            GlobalScope.launch(Dispatchers.IO) {
-                if (MainActivity.client.isConnected) {
-                    MainActivity.client.outputStream.write("cri\r".toByteArray())
-                }
-            }
+            MainActivity.sendCommand("cri")
         }
         btnDown.setOnClickListener {
-            GlobalScope.launch(Dispatchers.IO) {
-                if (MainActivity.client.isConnected) {
-                    MainActivity.client.outputStream.write("cdn\r".toByteArray())
-                }
-            }
-
+            MainActivity.sendCommand("cdn")
         }
         btnLeft.setOnClickListener {
-            GlobalScope.launch(Dispatchers.IO) {
-                if (MainActivity.client.isConnected) {
-                    MainActivity.client.outputStream.write("cle\r".toByteArray())
-                }
-            }
+            MainActivity.sendCommand("cle")
         }
         btnAuto.setOnClickListener {
-            GlobalScope.launch(Dispatchers.IO) {
-                if (MainActivity.client.isConnected) {
-                    MainActivity.client.outputStream.write("005sr\r".toByteArray())
-                }
-            }
+            MainActivity.sendCommand("0005sr")
         }
         btnSurr.setOnClickListener {
-            GlobalScope.launch(Dispatchers.IO) {
-                if (MainActivity.client.isConnected) {
-                    MainActivity.client.outputStream.write("0010sr\r".toByteArray())
-                }
-            }
+            MainActivity.sendCommand("0010sr")
         }
         btnAdv.setOnClickListener {
-            GlobalScope.launch(Dispatchers.IO) {
-                if (MainActivity.client.isConnected) {
-                    MainActivity.client.outputStream.write("0100sr\r".toByteArray())
-                }
-            }
+            MainActivity.sendCommand("0100sr")
+        }
+        btnMenuConnect.setOnClickListener{
+            AlertDialog.Builder(this@Menu)
+                .setTitle("Connection")
+                .setMessage("Would you like to connect with the previous settings?") // Specifying a listener allows you to take an action before dismissing the dialog.
+                // The dialog is automatically dismissed when a dialog button is clicked.
+                .setPositiveButton(
+                    "YES"
+                ) { dialog, which ->
+                    // Continue with delete operation
+                    connect().start()
+                } // A null listener allows the button to dismiss the dialog and take no further action.
+                .setNegativeButton(
+                    "NO")
+                    { dialog, which ->
+                        val context = this@Menu
+                        val intent = Intent(context, MainActivity::class.java)
+                        context.startActivity(intent)
+                    }
+                .setNeutralButton(
+                    android.R.string.cancel, null)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show()
         }
 
-        do {
-            try {
-                connect().start()
-            }
-            catch (e: IOException) {
-                Toast.makeText(this, "Could not connect", Toast.LENGTH_LONG).show()
-            }
-        }while(MainActivity.client.isConnected)
+
 
         }
     }

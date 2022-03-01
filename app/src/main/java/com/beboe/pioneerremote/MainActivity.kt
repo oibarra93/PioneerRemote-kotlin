@@ -1,5 +1,8 @@
 package com.beboe.pioneerremote
 
+import android.app.AlertDialog
+import android.app.Dialog
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.AsyncTask
 import android.os.Bundle
@@ -8,7 +11,9 @@ import android.os.Looper
 import android.text.method.ScrollingMovementMethod
 import android.util.Log
 import android.widget.*
+import android.widget.Toast.LENGTH_SHORT
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.DialogFragment
 import co.zsmb.materialdrawerkt.builders.accountHeader
 import co.zsmb.materialdrawerkt.builders.drawer
 import co.zsmb.materialdrawerkt.draweritems.badgeable.primaryItem
@@ -16,6 +21,7 @@ import co.zsmb.materialdrawerkt.draweritems.divider
 import co.zsmb.materialdrawerkt.draweritems.profile.profile
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
 import java.io.BufferedReader
 import java.io.IOException
@@ -27,12 +33,75 @@ import java.net.Socket
 
 class MainActivity : AppCompatActivity() {
     companion object{
+        var ip :MutableList<String> = mutableListOf()
         var client = Socket()
+        fun sendCommand(command: String) = GlobalScope.launch(Dispatchers.IO) {
+            var text = ""
+            if (client.isConnected) {
+                try {
+                    client.outputStream.write(("" + command + "\r").toByteArray())
+                    text = BufferedReader(InputStreamReader(client.inputStream)).readLine()
+                }
+                catch(e:IOException){
+                    Log.d("sendCommand","Failed")
+                }
+            }
+            else{
+
+            }
+            launch(Dispatchers.Main) {
+                if(client.isConnected){
+
+                }
+                else{
+
+                }
+            }
+        }
+        fun connect(ip:List<String>) = GlobalScope.launch(Dispatchers.IO) {
+            client = Socket()
+            try {
+                client.connect(InetSocketAddress(ip[0], ip[1].toInt()), 200)
+                if(client.isConnected)
+                    client.keepAlive = true
+            } catch (e: IOException) {
+                cancel("Could not connect")
+            }
+            launch(Dispatchers.Main) {
+
+            }
+        }
+
+    }
+    override fun onSaveInstanceState(savedInstanceState: Bundle) {
+        super.onSaveInstanceState(savedInstanceState)
+        // Save UI state changes to the savedInstanceState.
+        // This bundle will be passed to onCreate if the process is
+        // killed and restarted.
+        /*savedInstanceState.putBoolean("MyBoolean", true)
+        savedInstanceState.putDouble("myDouble", 1.9)
+        savedInstanceState.putInt("MyInt", 1)
+        savedInstanceState.putString("MyString", "Welcome back to Android")*/
+        // etc.
+    }
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        // Restore UI state from the savedInstanceState.
+        // This bundle has also been passed to onCreate.
+        val power = savedInstanceState.getBoolean("SAVED_POWER")
+        val mute = savedInstanceState.getBoolean("SAVED_MUTE")
+        val volume = savedInstanceState.getString("SAVED_VOLUME")
+        val ip = savedInstanceState.getString("SAVED_IP")
+        val port = savedInstanceState.getString("SAVE_PORT")
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        var power = savedInstanceState?.getBoolean("SAVED_POWER")
+        var mute = savedInstanceState?.getBoolean("SAVED_MUTE")
+        var volume = savedInstanceState?.getString("SAVED_VOLUME")
+        var ipAddress = savedInstanceState?.getString("SAVED_IP")
+        var port = savedInstanceState?.getString("SAVE_PORT")
         //Initialize viewContent variables
         var btnConnect = findViewById<Button>(R.id.btnConnect)
         var txtOutput = findViewById<TextView>(R.id.txtboxResponse)
@@ -57,9 +126,9 @@ class MainActivity : AppCompatActivity() {
         val seek = findViewById<SeekBar>(R.id.seekBarVolume)
         val inputGroup = findViewById<ChipGroup>(R.id.chipGroup)
         txtOutput.movementMethod = ScrollingMovementMethod()
-        var power = false
-        var volume = ""
-        var mute = false
+        //var power = false
+        //var volume = ""
+        //var mute = false
 
 
         //Initialize the network connection by scanning the local network
@@ -124,7 +193,7 @@ class MainActivity : AppCompatActivity() {
                             btnHDMI.text = "HDMI 5/MHL"
                         }
                     }
-                    Toast.makeText(this@MainActivity, "Input fetched: "+input, Toast.LENGTH_SHORT).show()
+                    txtOutput.text = txtOutput.text.toString() + "\nInput fetched $input"
                 } else {
                     Toast.makeText(
                         this@MainActivity,
@@ -133,10 +202,13 @@ class MainActivity : AppCompatActivity() {
                     ).show()
                 }
                 btnTogglePower.isChecked = power
+                txtOutput.text = txtOutput.text.toString() + "\nPower is $power"
                 var extract = "[0-9]+".toRegex().find(volume)
                 var volumeval = extract?.value.toString()
                 seek.progress = volumeval.toInt()
+                txtOutput.text = txtOutput.text.toString() + "\nVolume is $volumeval"
                 btnMute.isChecked = mute
+                txtOutput.text = txtOutput.text.toString() + "\nMute is $mute"
             }
 
         }
@@ -167,7 +239,6 @@ class MainActivity : AppCompatActivity() {
                 if(client.isConnected){
                 client.keepAlive = true}}
             catch (e:IOException){
-                //Toast.makeText(this@MainActivity, "Could not connect", Toast.LENGTH_SHORT)
                 cancel("Could not connect")
             }
 
@@ -202,7 +273,7 @@ class MainActivity : AppCompatActivity() {
                         Toast.makeText(this@MainActivity, "Could not fetch volume", Toast.LENGTH_SHORT)
                             .show()
                     }
-                }while(!(volume.contains("VOL")) or (i > 25))
+                }while(!(volume!!.contains("VOL")) or (i > 25))
             }
             //Fetch power status
             power = false
@@ -252,7 +323,7 @@ class MainActivity : AppCompatActivity() {
             }
             //Update UI on main thread
             launch(Dispatchers.Main) {
-                getStatus(power,volume,mute).join()
+                getStatus(power!!, volume!!, mute!!).join()
             }
         }
 
@@ -270,72 +341,116 @@ class MainActivity : AppCompatActivity() {
                     client.keepAlive = true
             } catch (e: IOException) {
                 cancel("Could not connect")
-                //txtOutput.text = txtOutput.text.toString() + "\nCould not connect"
             }
             launch(Dispatchers.Main) {
                 if (client.isConnected) {
                     txtOutput.text =
                         txtOutput.text.toString() + "\nSuccessfully connected to " + ip[0] + ":" + ip[1]
                     try{
-                        getStatus(power,volume,mute).join()
+                        power?.let { volume?.let { it1 -> mute?.let { it2 ->
+                            getStatus(it, it1,
+                                it2
+                            ).join()
+                        } } }
                     }
                     catch(e:IOException){
-                        txtOutput.text = txtOutput.text.toString() + "\nCould not fetch status"
+                        Log.d("Connection","Could not fetch status")
                     }
                 }
             }
         }
+        fun sendCommand(textView: TextView, command: String) = GlobalScope.launch(Dispatchers.IO) {
+            var text = ""
+            if (client.isConnected) {
+                try {
+                    client.outputStream.write(("" + command + "\r").toByteArray())
+                    text = BufferedReader(InputStreamReader(client.inputStream)).readLine()
+                }
+                catch(e:IOException){
+                    Log.d("sendCommand","Failed")
+                }
+            }
+            launch(Dispatchers.Main) {
+                if(client.isConnected){
+                    textView.text = textView.text.toString() + "\n" + text + "\nSent " + command.toString() +  " successfully"
+                    Toast.makeText(this@MainActivity, "$command executed", Toast.LENGTH_SHORT).show()
+                }
+                else{
+                    textView.text = textView.text.toString() + "\n" + text + "\nNot connected!"
+                }
+            }
+        }
+        fun changeInput(textView: TextView, command: String) = GlobalScope.launch(Dispatchers.IO) {
+            var text = ""
+            if (client.isConnected) {
+                try {
+                    client.outputStream.write(("" + command + "\r").toByteArray())
+                    text = BufferedReader(InputStreamReader(client.inputStream)).readLine()
+                }
+                catch(e:IOException){
+                    Log.d("changeInput","Failed")
+                }
+            }
+            launch(Dispatchers.Main){
+                textView.text = textView.text.toString() + "\n$text" + "\nInput changed to $command"
+                Toast.makeText(this@MainActivity, "$command Succeeded", Toast.LENGTH_SHORT).show()
+            }
+        }
         //Button Listener actions
         btnBT.setOnClickListener {
-            changeInput(txtOutput,"33fn").execute()
+            changeInput(txtOutput,"33fn")
 
         }
         btniPod.setOnClickListener {
-            changeInput(txtOutput,"17fn").execute()
+            changeInput(txtOutput,"17fn")
 
         }
         btnNet.setOnClickListener {
-            changeInput(txtOutput,"26fn").execute()
+            changeInput(txtOutput,"26fn")
 
         }
         btnSpotify.setOnClickListener {
-            changeInput(txtOutput,"53fn").execute()
+            changeInput(txtOutput,"53fn")
 
         }
         btnMHL.setOnClickListener {
-            changeInput(txtOutput,"34fn").execute()
+            changeInput(txtOutput,"34fn")
 
         }
         btnTuner.setOnClickListener {
-            changeInput(txtOutput,"02fn").execute()
+            changeInput(txtOutput,"02fn")
 
         }
         btnAll.setOnClickListener{
-            changeInput(txtOutput,"fu").execute()
+            changeInput(txtOutput,"fu")
             try{
-                getStatus(power, volume, mute).start()
+                power?.let { it1 -> volume?.let { it2 -> mute?.let { it3 ->
+                    getStatus(it1, it2,
+                        it3
+                    ).start()
+                } } }
             }
             catch(e:IOException){
                 txtOutput.text = txtOutput.text.toString() + "\nError fetching status"
             }
         }
         btnBD.setOnClickListener{
-            changeInput(txtOutput,"25fn").execute()
+            changeInput(txtOutput,"25fn")
         }
         btnDVD.setOnClickListener{
-            changeInput(txtOutput,"04fn").execute()
+            changeInput(txtOutput,"04fn")
         }
         btnSat.setOnClickListener{
-            changeInput(txtOutput,"06fn").execute()
+            changeInput(txtOutput,"06fn")
         }
         btnHDMI.setOnClickListener{
-            changeInput(txtOutput,"31fn").execute()
+            changeInput(txtOutput,"31fn")
         }
         btnTV.setOnClickListener{
-            changeInput(txtOutput,"05fn").execute()
+            changeInput(txtOutput,"05fn")
         }
         btnCD.setOnClickListener{
-            changeInput(txtOutput,"01fn").execute()
+            changeInput(txtOutput,"01fn")
         }
 
         btnConnect.setOnClickListener {
@@ -368,14 +483,14 @@ class MainActivity : AppCompatActivity() {
 
         btnSendCommand.setOnClickListener {
             var command = editTextCommand.text.toString().trim()
-            sendCommand(txtOutput,command).execute()
+            sendCommand(txtOutput,command)
         }
         btnTogglePower.setOnClickListener{
             if(btnTogglePower.isChecked){
-                sendCommand(txtOutput,"po").execute()
+                sendCommand(txtOutput,"po")
             }
             else{
-                sendCommand(txtOutput, "pf").execute()
+                sendCommand(txtOutput, "pf")
             }
 
         }
@@ -410,13 +525,13 @@ class MainActivity : AppCompatActivity() {
             override fun onStopTrackingTouch(seek: SeekBar) {
                 // write custom code for progress is stopped
                 if(seek.progress >= 100) {
-                    sendCommand(txtOutput, seek.progress.toString() + "vl").execute()
+                    sendCommand(txtOutput, seek.progress.toString() + "vl")
                 }
                 else if(seek.progress >= 10){
-                    sendCommand(txtOutput, "0" + seek.progress.toString() + "vl").execute()
+                    sendCommand(txtOutput, "0" + seek.progress.toString() + "vl")
                 }
                 else{
-                    sendCommand(txtOutput, "00" + seek.progress.toString() + "vl").execute()
+                    sendCommand(txtOutput, "00" + seek.progress.toString() + "vl")
                 }
             }
         })
@@ -432,9 +547,13 @@ class MainActivity : AppCompatActivity() {
             primaryItem("Connection") {
                 onClick { _ ->
                     Log.d("Drawer","Click.")
-                    init().cancel()
-                    getStatus(power, volume, mute).cancel()
-                    connect(ip).cancel()
+                    /*init().cancel()
+                    power?.let { volume?.let { it1 -> mute?.let { it2 ->
+                        getStatus(it, it1,
+                            it2
+                        ).cancel()
+                    } } }
+                    connect(ip).cancel()*/
                     val extraIp = ip[0]
                     val extraPort = ip[1].toInt()
                     Intent(this@MainActivity, Menu::class.java).also{
@@ -450,9 +569,13 @@ class MainActivity : AppCompatActivity() {
             primaryItem("Home Menu Controls") {
                 onClick { _ ->
                     Log.d("Drawer","Click.")
-                    init().cancel()
-                    getStatus(power, volume, mute).cancel()
-                    connect(ip).cancel()
+                    /*init().cancel()
+                    power?.let { volume?.let { it1 -> mute?.let { it2 ->
+                        getStatus(it, it1,
+                            it2
+                        ).cancel()
+                    } } }
+                    connect(ip).cancel()*/
                     val context = this@MainActivity
                     val intent = Intent(context, Menu::class.java)
                     context.startActivity(intent)
@@ -460,10 +583,20 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-
+        fun saveInstance() {
+            savedInstanceState?.putString("SAVED_IP", ip[0])
+            savedInstanceState?.putString("SAVED_PORT", ip[1])
+            power?.let { savedInstanceState?.putBoolean("SAVED_POWER", it) }
+            mute?.let { savedInstanceState?.putBoolean("SAVED_MUTE", it) }
+            savedInstanceState?.putString("SAVED_VOLUME", volume)
+        }
+        saveInstance()
 
     }
-    inner class sendCommand(textView: TextView, command: String) : AsyncTask<Unit, Unit, String>() {
+
+
+
+    /*inner class sendCommand(textView: TextView, command: String) : AsyncTask<Unit, Unit, String>() {
         val innerTextView: TextView? = textView
         var text = ""
         var command: String? = command
@@ -490,8 +623,8 @@ class MainActivity : AppCompatActivity() {
                 innerTextView?.text = innerTextView?.text.toString() + "\n" + text + "\nNot connected!"
             }
         }
-    }
-    inner class changeInput(textView: TextView, command: String) : AsyncTask<Unit, Unit, String>() {
+    }*/
+    /*inner class changeInput(textView: TextView, command: String) : AsyncTask<Unit, Unit, String>() {
         val innerTextView: TextView? = textView
         var text = ""
         var command: String? = command
@@ -512,5 +645,5 @@ class MainActivity : AppCompatActivity() {
             super.onPostExecute(result)
 
         }
-    }
+    }*/
 }
