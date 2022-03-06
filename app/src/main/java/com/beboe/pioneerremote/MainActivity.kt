@@ -220,7 +220,7 @@ class MainActivity : AppCompatActivity() {
                 launch {
                     try {
                         var connection = Socket()
-                        connection.connect(InetSocketAddress(prefix + i.toString(), 8102), 300)
+                        connection.connect(InetSocketAddress(prefix + i.toString(), 8102), 200)
                         answer.send(i)
                         return@launch
                     }catch (e:Exception){
@@ -558,6 +558,7 @@ class MainActivity : AppCompatActivity() {
                         it.putExtra("EXTRA_IP",extraIp)
                         it.putExtra("EXTRA_PORT", extraPort)
                         startActivity(intent)
+                        finish()
                     }
 
                     false
@@ -577,6 +578,7 @@ class MainActivity : AppCompatActivity() {
                     val context = this@MainActivity
                     val intent = Intent(context, Menu::class.java)
                     context.startActivity(intent)
+                    finish()
                     false
                 }
             }

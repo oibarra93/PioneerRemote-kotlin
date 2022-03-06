@@ -67,15 +67,6 @@ class Menu : AppCompatActivity() {
                     Toast.makeText(this@Menu, "Connected", Toast.LENGTH_SHORT).show()
             }
         }
-        /*do {
-            try {
-                Toast.makeText(this@Menu, "Connecting...", Toast.LENGTH_SHORT).show()
-                connect().start()
-            }
-            catch (e: IOException) {
-                Toast.makeText(this, "Could not connect", Toast.LENGTH_LONG).show()
-            }
-        }while(MainActivity.client.isConnected)*/
 
         drawer {
             accountHeader() {
@@ -90,6 +81,7 @@ class Menu : AppCompatActivity() {
                     val context = this@Menu
                     val intent = Intent(context, MainActivity::class.java)
                     context.startActivity(intent)
+                    finish()
                     false
                 }
             }
@@ -100,6 +92,7 @@ class Menu : AppCompatActivity() {
                     val context = this@Menu
                     val intent = Intent(context, Menu::class.java)
                     context.startActivity(intent)
+                    finish()
                     false
                 }
             }
