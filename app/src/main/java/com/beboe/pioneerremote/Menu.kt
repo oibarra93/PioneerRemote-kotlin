@@ -85,7 +85,7 @@ class Menu : AppCompatActivity() {
             }
             primaryItem("Connection") {
                 onClick { _ ->
-                    Log.d("Drawer", "Click.")
+                    Log.e("Drawer", "Click.")
                     //connect().cancel()
                     val context = this@Menu
                     val intent = Intent(context, MainActivity::class.java)
@@ -96,7 +96,7 @@ class Menu : AppCompatActivity() {
             divider {}
             primaryItem("Home Menu Controls") {
                 onClick { _ ->
-                    Log.d("Drawer", "Click.")
+                    Log.e("Drawer", "Click.")
                     val context = this@Menu
                     val intent = Intent(context, Menu::class.java)
                     context.startActivity(intent)

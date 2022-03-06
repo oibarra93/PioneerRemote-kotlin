@@ -23,6 +23,7 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -43,7 +44,7 @@ class MainActivity : AppCompatActivity() {
                     text = BufferedReader(InputStreamReader(client.inputStream)).readLine()
                 }
                 catch(e:IOException){
-                    Log.d("sendCommand","Failed")
+                    Log.e("sendCommand","Failed")
                 }
             }
             else{
@@ -138,7 +139,6 @@ class MainActivity : AppCompatActivity() {
         var prefix = ""
 
         fun getStatus(power:Boolean,volume:String,mute:Boolean) = GlobalScope.launch(Dispatchers.IO) {
-            Thread.sleep(100)
             var input = ""
             if (client.isConnected) {
                 do {
@@ -146,12 +146,8 @@ class MainActivity : AppCompatActivity() {
                         client.outputStream.write(("?f\r?f\r").toByteArray())
                         input = BufferedReader(InputStreamReader(client.inputStream)).readLine()
                     } catch (e: IOException) {
-                        Toast.makeText(
-                            this@MainActivity,
-                            "Could not fetch input",
-                            Toast.LENGTH_SHORT
-                        )
-                            .show()
+                        //Toast.makeText(this@MainActivity,"Could not fetch input",LENGTH_SHORT).show()
+                        Log.e("Connection","Could not fetch input")
                     }
                 } while (!(input.contains("FN")))
             }
@@ -195,11 +191,7 @@ class MainActivity : AppCompatActivity() {
                     }
                     txtOutput.text = txtOutput.text.toString() + "\nInput fetched $input"
                 } else {
-                    Toast.makeText(
-                        this@MainActivity,
-                        "Could not fetch input, not connected.",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Log.e("Connection","Could not fetch input, not connected")
                 }
                 btnTogglePower.isChecked = power
                 txtOutput.text = txtOutput.text.toString() + "\nPower is $power"
@@ -222,105 +214,111 @@ class MainActivity : AppCompatActivity() {
             txtOutput.text = ip.toString()
             prefix = ip[0] + "." + ip[1] + "." + ip[2] + "."
 
-            var i = 1
-            do {
-                try {
-                    client = Socket()
-                    client.connect(InetSocketAddress(prefix + i.toString(), 8102), 200)
-                } catch (e: Exception) {
-                    print(e.toString())
-                    i++
+            val answer= Channel<Int>()
+
+            for (i in 1..254){
+                launch {
+                    try {
+                        var connection = Socket()
+                        connection.connect(InetSocketAddress(prefix + i.toString(), 8102), 300)
+                        answer.send(i)
+                        return@launch
+                    }catch (e:Exception){
+                        Log.e("Connection", "Could not connect to address $i")
+                    }
+
                 }
-            } while (!(client.isConnected) or (i > 254))
-            targetIP = prefix + i.toString()
-            client = Socket()
-            try{
-            client.connect(InetSocketAddress(targetIP, 8102), 150)
+            }
+
+            val i=answer.receive()
+
+
+                targetIP = prefix + i.toString()
+                client = Socket()
+                try{
+                client.connect(InetSocketAddress(targetIP, 8102), 150)
+                    if(client.isConnected){
+                    client.keepAlive = true}}
+                catch (e:IOException){
+                    cancel("Could not connect")
+                }
+
+
+                //Fetch input status
+                var input = ""
+
+                if (client.isConnected) {
+                    try {
+
+                        client.outputStream.write(("?f\r?f\r").toByteArray())
+                        input = BufferedReader(InputStreamReader(client.inputStream)).readLine()
+                    } catch (e: IOException) {
+                        //Toast.makeText(this@MainActivity, "Could not fetch input", Toast.LENGTH_SHORT).show()
+                        Log.e("Connection","Could not fetch input")
+                    }
+                }
+
+                //Fetch volume status
+                volume = ""
+                val regex = Regex("[VOL]+[0-9]+")
+                if (client.isConnected) {
+                    var i = 0
+                    do{
+                        try {
+                            client.outputStream.write("?v\r?v\r".toByteArray())
+                            var response = BufferedReader(InputStreamReader(client.inputStream)).readLine()
+                            var extract = regex.find(response)
+                            volume = extract?.value.toString()
+                            i++
+                        } catch (e: IOException) {
+                            //Toast.makeText(this@MainActivity, "Could not fetch volume", Toast.LENGTH_SHORT).show()
+                            Log.e("Connection","Could not fetch volume")
+                        }
+                    }while(!(volume!!.contains("VOL")) or (i > 25))
+                }
+                //Fetch power status
+                power = false
+                if (client.isConnected) {
+                    var powerresponse = ""
+                    var i = 0
+                    do {
+                        try {
+                            client.outputStream.write("?p\r?p\r".toByteArray())
+                            powerresponse =
+                                BufferedReader(InputStreamReader(client.inputStream)).readLine()
+                            if (powerresponse.contains("PWR0")
+                            ) {
+                                power = true
+                            }
+                            i++
+                        } catch (e: IOException) {
+                            //Toast.makeText(this@MainActivity,"Could not fetch power",Toast.LENGTH_SHORT).show()
+                            Log.e("Connection","Could not fetch power")
+                        }
+                    } while (!(powerresponse.contains("PWR")) or (i > 25))
+                }
+                //Fetch mute status
+                mute = false
                 if(client.isConnected){
-                client.keepAlive = true}}
-            catch (e:IOException){
-                cancel("Could not connect")
-            }
-
-
-            //Fetch input status
-            var input = ""
-            Thread.sleep(50)
-            if (client.isConnected) {
-                try {
-
-                    client.outputStream.write(("?f\r?f\r").toByteArray())
-                    input = BufferedReader(InputStreamReader(client.inputStream)).readLine()
-                } catch (e: IOException) {
-                    Toast.makeText(this@MainActivity, "Could not fetch input", Toast.LENGTH_SHORT)
-                        .show()
+                    var i = 0
+                    var muteresponse = ""
+                    do{
+                        try{
+                            client.outputStream.write("?m\r".toByteArray())
+                            muteresponse =
+                                BufferedReader(InputStreamReader(client.inputStream)).readLine()
+                            if (muteresponse.contains("MUT0")
+                            ) {
+                                mute = true
+                            }
+                            i++
+                        }
+                        catch(e:IOException){
+                            //Toast.makeText(this@MainActivity, "Could not fetch mute status", Toast.LENGTH_SHORT).show()
+                            Log.e("Connection","Could not fetch mute status")
+                        }
+                    }while(!(muteresponse.contains("MUT"))or(i > 25))
                 }
-            }
-
-            //Fetch volume status
-            volume = ""
-            val regex = Regex("[VOL]+[0-9]+")
-            if (client.isConnected) {
-                var i = 0
-                do{
-                    try {
-                        client.outputStream.write("?v\r?v\r".toByteArray())
-                        var response = BufferedReader(InputStreamReader(client.inputStream)).readLine()
-                        var extract = regex.find(response)
-                        volume = extract?.value.toString()
-                        i++
-                    } catch (e: IOException) {
-                        Toast.makeText(this@MainActivity, "Could not fetch volume", Toast.LENGTH_SHORT)
-                            .show()
-                    }
-                }while(!(volume!!.contains("VOL")) or (i > 25))
-            }
-            //Fetch power status
-            power = false
-            if (client.isConnected) {
-                var powerresponse = ""
-                var i = 0
-                do {
-                    try {
-                        client.outputStream.write("?p\r?p\r".toByteArray())
-                        powerresponse =
-                            BufferedReader(InputStreamReader(client.inputStream)).readLine()
-                        if (powerresponse.contains("PWR0")
-                        ) {
-                            power = true
-                        }
-                        i++
-                    } catch (e: IOException) {
-                        Toast.makeText(
-                            this@MainActivity,
-                            "Could not fetch power",
-                            Toast.LENGTH_SHORT
-                        )
-                            .show()
-                    }
-                } while (!(powerresponse.contains("PWR")) or (i > 25))
-            }
-            //Fetch mute status
-            mute = false
-            if(client.isConnected){
-                var i = 0
-                var muteresponse = ""
-                do{
-                    try{
-                        client.outputStream.write("?m\r".toByteArray())
-                        muteresponse =
-                            BufferedReader(InputStreamReader(client.inputStream)).readLine()
-                        if (muteresponse.contains("MUT0")
-                        ) {
-                            mute = true
-                        }
-                        i++
-                    }
-                    catch(e:IOException){
-                        Toast.makeText(this@MainActivity, "Could not fetch mute status", Toast.LENGTH_SHORT)
-                    }
-                }while(!(muteresponse.contains("MUT"))or(i > 25))
-            }
             //Update UI on main thread
             launch(Dispatchers.Main) {
                 getStatus(power!!, volume!!, mute!!).join()
@@ -354,7 +352,7 @@ class MainActivity : AppCompatActivity() {
                         } } }
                     }
                     catch(e:IOException){
-                        Log.d("Connection","Could not fetch status")
+                        Log.e("Connection","Could not fetch status")
                     }
                 }
             }
@@ -367,7 +365,7 @@ class MainActivity : AppCompatActivity() {
                     text = BufferedReader(InputStreamReader(client.inputStream)).readLine()
                 }
                 catch(e:IOException){
-                    Log.d("sendCommand","Failed")
+                    Log.e("sendCommand","Failed")
                 }
             }
             launch(Dispatchers.Main) {
@@ -388,7 +386,7 @@ class MainActivity : AppCompatActivity() {
                     text = BufferedReader(InputStreamReader(client.inputStream)).readLine()
                 }
                 catch(e:IOException){
-                    Log.d("changeInput","Failed")
+                    Log.e("changeInput","Failed")
                 }
             }
             launch(Dispatchers.Main){
@@ -546,7 +544,7 @@ class MainActivity : AppCompatActivity() {
             }
             primaryItem("Connection") {
                 onClick { _ ->
-                    Log.d("Drawer","Click.")
+                    Log.e("Drawer","Click.")
                     /*init().cancel()
                     power?.let { volume?.let { it1 -> mute?.let { it2 ->
                         getStatus(it, it1,
@@ -568,7 +566,7 @@ class MainActivity : AppCompatActivity() {
             divider{}
             primaryItem("Home Menu Controls") {
                 onClick { _ ->
-                    Log.d("Drawer","Click.")
+                    Log.e("Drawer","Click.")
                     /*init().cancel()
                     power?.let { volume?.let { it1 -> mute?.let { it2 ->
                         getStatus(it, it1,
