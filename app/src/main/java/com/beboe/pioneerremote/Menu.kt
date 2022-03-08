@@ -1,3 +1,5 @@
+@file:Suppress("SpellCheckingInspection")
+
 package com.beboe.pioneerremote
 
 import android.app.AlertDialog
@@ -20,14 +22,10 @@ import java.io.IOException
 import java.net.InetSocketAddress
 import java.net.Socket
 
+@Suppress("DEPRECATION")
 class Menu : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private lateinit var drawer: DrawerLayout
     private lateinit var myVib: Vibrator
-    companion object{
-
-    }
-
-
 
     @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,7 +36,7 @@ class Menu : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListene
         drawer = findViewById(R.id.drawer_layout)
         val nagivationView = findViewById<NavigationView>(R.id.nav_view)
         nagivationView.setNavigationItemSelectedListener(this)
-        nagivationView.bringToFront();
+        nagivationView.bringToFront()
         val toggle = ActionBarDrawerToggle(
             this@Menu,
             drawer,
@@ -138,14 +136,14 @@ class Menu : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListene
                 // The dialog is automatically dismissed when a dialog button is clicked.
                 .setPositiveButton(
                     "YES"
-                ) { dialog, which ->
+                ) { _, _ ->
                     myVib.vibrate(50)
                     // Continue with local connect
                     connect().start()
                 } // A null listener allows the button to dismiss the dialog and take no further action.
                 .setNegativeButton(
                     "NO")
-                    { dialog, which ->
+                    { _, _ ->
                         myVib.vibrate(50)
                         val context = this@Menu
                         val intent = Intent(context, MainActivity::class.java)

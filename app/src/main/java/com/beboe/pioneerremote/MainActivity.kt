@@ -1,3 +1,5 @@
+@file:Suppress("SpellCheckingInspection")
+
 package com.beboe.pioneerremote
 
 import android.annotation.SuppressLint
@@ -30,7 +32,7 @@ import java.net.InetSocketAddress
 import java.net.Socket
 
 
-@Suppress("BlockingMethodInNonBlockingContext", "LABEL_NAME_CLASH")
+@Suppress("BlockingMethodInNonBlockingContext", "LABEL_NAME_CLASH", "DEPRECATION", "NAME_SHADOWING")
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private lateinit var drawer: DrawerLayout
     private lateinit var myVib: Vibrator
@@ -42,11 +44,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         @OptIn(DelicateCoroutinesApi::class)
         fun sendCommand(command: String) = GlobalScope.launch(Dispatchers.IO) {
-            var text = ""
             if (client.isConnected) {
                 try {
                     client.outputStream.write(("" + command + "\r").toByteArray())
-                    text = BufferedReader(InputStreamReader(client.inputStream)).readLine()
                 } catch (e: IOException) {
                     Log.e("sendCommand", "Failed")
                 }
@@ -61,29 +61,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
     }
 
-    override fun onSaveInstanceState(savedInstanceState: Bundle) {
-        super.onSaveInstanceState(savedInstanceState)
-        // Save UI state changes to the savedInstanceState.
-        // This bundle will be passed to onCreate if the process is
-        // killed and restarted.
-        /*savedInstanceState.putBoolean("MyBoolean", true)
-        savedInstanceState.putDouble("myDouble", 1.9)
-        savedInstanceState.putInt("MyInt", 1)
-        savedInstanceState.putString("MyString", "Welcome back to Android")*/
-        // etc.
-    }
-
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        super.onRestoreInstanceState(savedInstanceState)
-        // Restore UI state from the savedInstanceState.
-        // This bundle has also been passed to onCreate.
-        val power = savedInstanceState.getBoolean("SAVED_POWER")
-        val mute = savedInstanceState.getBoolean("SAVED_MUTE")
-        val volume = savedInstanceState.getString("SAVED_VOLUME")
-        val ip = savedInstanceState.getString("SAVED_IP")
-        val port = savedInstanceState.getString("SAVE_PORT")
-    }
-
     @SuppressLint("SetTextI18n")
     @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -94,7 +71,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         drawer = findViewById(R.id.drawer_layout)
         val nagivationView = findViewById<NavigationView>(R.id.nav_view)
         nagivationView.setNavigationItemSelectedListener(this)
-        nagivationView.bringToFront();
+        nagivationView.bringToFront()
         val toggle = ActionBarDrawerToggle(
             this@MainActivity,
             drawer,
@@ -110,8 +87,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         var power = savedInstanceState?.getBoolean("SAVED_POWER")
         var mute = savedInstanceState?.getBoolean("SAVED_MUTE")
         var volume = savedInstanceState?.getString("SAVED_VOLUME")
-        var ipAddress = savedInstanceState?.getString("SAVED_IP")
-        var port = savedInstanceState?.getString("SAVE_PORT")
         myVib = this.getSystemService(VIBRATOR_SERVICE) as Vibrator
         //Initialize viewContent variables
         val btnConnect = findViewById<Button>(R.id.btnConnect)
@@ -230,7 +205,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             //Get local ip
             DatagramSocket().use { socket ->
                 with(socket) { connect(InetAddress.getByName("8.8.8.8"), 10002) }
-                ip = socket?.localAddress?.hostAddress?.split(".") as MutableList<String>
+                ip = socket.localAddress?.hostAddress?.split(".") as MutableList<String>
             }
             //Go through local addresses to find receiver
             txtOutput.text = ip.toString()
@@ -268,16 +243,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 cancel("Could not connect")
             }
 
-
             //Fetch input status
-
-            var input = ""
-
             if (client.isConnected) {
                 try {
 
                     client.outputStream.write(("?f\r?f\r").toByteArray())
-                    input = BufferedReader(InputStreamReader(client.inputStream)).readLine()
+
                 } catch (e: IOException) {
                     Log.e("Connection", "Could not fetch input")
                 }
@@ -404,7 +375,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             launch(Dispatchers.Main) {
                 if (client.isConnected) {
                     textView.text =
-                        textView.text.toString() + "\n" + text + "\nSent " + command.toString() + " successfully"
+                        textView.text.toString() + "\n" + text + "\nSent " + command + " successfully"
                     Toast.makeText(this@MainActivity, "$command executed", Toast.LENGTH_SHORT)
                         .show()
                 } else {
@@ -521,7 +492,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
                 txtOutput.text = txtOutput.text.toString() + "\n" + ip.toString()
                 if (ip.size > 0) {
-                    if (!(client.inetAddress?.toString() == ip[0]) && !(client.port.toString() == ip[1])) {
+                    if (client.inetAddress?.toString() != ip[0] && client.port.toString() != ip[1]) {
                         try {
                             client.close()
                             connect(ip).start()
@@ -557,7 +528,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             txtOutput.text = txtOutput.text.toString() + "\n" + ip.toString()
             if (ip.size > 0) {
-                if (!(client.inetAddress?.toString() == ip[0]) && !(client.port.toString() == ip[1])) {
+                if (client.inetAddress?.toString() != ip[0] && client.port.toString() != ip[1]) {
                     try {
                         client.close()
                         connect(ip).start()
@@ -570,7 +541,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 }
             }
         }
-        editTextCommand.setOnKeyListener(View.OnKeyListener { v, keyCode, event ->
+        editTextCommand.setOnKeyListener(View.OnKeyListener { _, keyCode, event ->
             if (keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
                 //Perform Code
                 myVib.vibrate(50)
@@ -629,12 +600,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             override fun onStopTrackingTouch(seek: SeekBar) {
                 // write custom code for progress is stopped
-                if (seek.progress >= 100) {
-                    sendCommand(txtOutput, seek.progress.toString() + "vl")
-                } else if (seek.progress >= 10) {
-                    sendCommand(txtOutput, "0" + seek.progress.toString() + "vl")
-                } else {
-                    sendCommand(txtOutput, "00" + seek.progress.toString() + "vl")
+                when {
+                    seek.progress >= 100 -> {
+                        sendCommand(txtOutput, seek.progress.toString() + "vl")
+                    }
+                    seek.progress >= 10 -> {
+                        sendCommand(txtOutput, "0" + seek.progress.toString() + "vl")
+                    }
+                    else -> {
+                        sendCommand(txtOutput, "00" + seek.progress.toString() + "vl")
+                    }
                 }
             }
         })
@@ -670,7 +645,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.nav_menu -> {
                 myVib.vibrate(50)
                 Log.e("Menu", "Click.")
-                Intent(this, com.beboe.pioneerremote.Menu::class.java).also {
+                Intent(this, Menu::class.java).also {
                     if (address.size == 2) {
                         it.putExtra("EXTRA_IP", address[0])
                         it.putExtra("EXTRA_PORT", address[1].toInt())
