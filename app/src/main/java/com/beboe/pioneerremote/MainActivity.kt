@@ -1,5 +1,6 @@
 package com.beboe.pioneerremote
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -29,13 +30,17 @@ import java.net.InetSocketAddress
 import java.net.Socket
 
 
+@Suppress("BlockingMethodInNonBlockingContext", "LABEL_NAME_CLASH")
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private lateinit var drawer: DrawerLayout
     private lateinit var myVib: Vibrator
+
     companion object {
 
         var address: MutableList<String> = mutableListOf()
         var client = Socket()
+
+        @OptIn(DelicateCoroutinesApi::class)
         fun sendCommand(command: String) = GlobalScope.launch(Dispatchers.IO) {
             var text = ""
             if (client.isConnected) {
@@ -45,37 +50,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 } catch (e: IOException) {
                     Log.e("sendCommand", "Failed")
                 }
-            } else {
-
-            }
-            launch(Dispatchers.Main) {
-                if (client.isConnected) {
-
-                } else {
-
-                }
             }
         }
 
-        fun connect(ip: List<String>) = GlobalScope.launch(Dispatchers.IO) {
-            client = Socket()
-            try {
-                client.connect(InetSocketAddress(ip[0], ip[1].toInt()), 200)
-                if (client.isConnected)
-                    client.keepAlive = true
-            } catch (e: IOException) {
-                cancel("Could not connect")
-            }
-            launch(Dispatchers.Main) {
-
-            }
-        }
     }
 
-    fun Context.hideKeyboard(view: View) {
-        val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+    private fun Context.hideKeyboard(view: View) {
+        val inputMethodManager =
+            getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
     }
+
     override fun onSaveInstanceState(savedInstanceState: Bundle) {
         super.onSaveInstanceState(savedInstanceState)
         // Save UI state changes to the savedInstanceState.
@@ -99,25 +84,27 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val port = savedInstanceState.getString("SAVE_PORT")
     }
 
+    @SuppressLint("SetTextI18n")
     @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        var toolbar = findViewById<Toolbar>(R.id.toolbar)
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         drawer = findViewById(R.id.drawer_layout)
-        var nagivationView = findViewById<NavigationView>(R.id.nav_view)
+        val nagivationView = findViewById<NavigationView>(R.id.nav_view)
         nagivationView.setNavigationItemSelectedListener(this)
         nagivationView.bringToFront();
-        var toggle = ActionBarDrawerToggle(
+        val toggle = ActionBarDrawerToggle(
             this@MainActivity,
             drawer,
             toolbar,
             R.string.navigation_drawer_open,
             R.string.navigation_drawer_close
         )
-        if(savedInstanceState == null){
-        nagivationView.setCheckedItem(R.id.nav_main)}
+        if (savedInstanceState == null) {
+            nagivationView.setCheckedItem(R.id.nav_main)
+        }
         drawer.addDrawerListener(toggle)
         toggle.syncState()
         var power = savedInstanceState?.getBoolean("SAVED_POWER")
@@ -127,26 +114,26 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         var port = savedInstanceState?.getString("SAVE_PORT")
         myVib = this.getSystemService(VIBRATOR_SERVICE) as Vibrator
         //Initialize viewContent variables
-        var btnConnect = findViewById<Button>(R.id.btnConnect)
-        var txtOutput = findViewById<TextView>(R.id.txtboxResponse)
-        var txtInput = findViewById<EditText>(R.id.editTextHostname)
-        var btnSendCommand = findViewById<Button>(R.id.btnSendCommand)
-        var editTextCommand = findViewById<EditText>(R.id.editTextCommand)
-        var btnBT = findViewById<Button>(R.id.btnBT)
-        var btniPod = findViewById<Chip>(R.id.btniPod)
-        var btnNet = findViewById<Chip>(R.id.btnNet)
-        var btnSpotify = findViewById<Chip>(R.id.btnSpotify)
-        var btnTuner = findViewById<Chip>(R.id.btnTuner)
-        var btnMHL = findViewById<Chip>(R.id.btnMHL)
-        var btnBD = findViewById<Chip>(R.id.btnBD)
-        var btnSat = findViewById<Chip>(R.id.btnSat)
-        var btnHDMI = findViewById<Chip>(R.id.btnHDMI)
-        var btnTV = findViewById<Chip>(R.id.btnTV)
-        var btnCD = findViewById<Chip>(R.id.btnCD)
-        var btnAll = findViewById<Chip>(R.id.btnCyclic)
-        var btnDVD = findViewById<Chip>(R.id.btnDVD)
-        var btnTogglePower = findViewById<ToggleButton>(R.id.toggleButtonPower)
-        var btnMute = findViewById<ToggleButton>(R.id.btnMute)
+        val btnConnect = findViewById<Button>(R.id.btnConnect)
+        val txtOutput = findViewById<TextView>(R.id.txtboxResponse)
+        val txtInput = findViewById<EditText>(R.id.editTextHostname)
+        val btnSendCommand = findViewById<Button>(R.id.btnSendCommand)
+        val editTextCommand = findViewById<EditText>(R.id.editTextCommand)
+        val btnBT = findViewById<Button>(R.id.btnBT)
+        val btniPod = findViewById<Chip>(R.id.btniPod)
+        val btnNet = findViewById<Chip>(R.id.btnNet)
+        val btnSpotify = findViewById<Chip>(R.id.btnSpotify)
+        val btnTuner = findViewById<Chip>(R.id.btnTuner)
+        val btnMHL = findViewById<Chip>(R.id.btnMHL)
+        val btnBD = findViewById<Chip>(R.id.btnBD)
+        val btnSat = findViewById<Chip>(R.id.btnSat)
+        val btnHDMI = findViewById<Chip>(R.id.btnHDMI)
+        val btnTV = findViewById<Chip>(R.id.btnTV)
+        val btnCD = findViewById<Chip>(R.id.btnCD)
+        val btnAll = findViewById<Chip>(R.id.btnCyclic)
+        val btnDVD = findViewById<Chip>(R.id.btnDVD)
+        val btnTogglePower = findViewById<ToggleButton>(R.id.toggleButtonPower)
+        val btnMute = findViewById<ToggleButton>(R.id.btnMute)
         val seek = findViewById<SeekBar>(R.id.seekBarVolume)
         val inputGroup = findViewById<ChipGroup>(R.id.chipGroup)
         txtOutput.movementMethod = ScrollingMovementMethod()
@@ -157,6 +144,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         var ip: MutableList<String> = mutableListOf()
         var prefix: String
 
+        @SuppressLint("SetTextI18n")
         @RequiresApi(Build.VERSION_CODES.O)
         fun getStatus(power: Boolean, volume: String, mute: Boolean) =
             GlobalScope.launch(Dispatchers.IO) {
@@ -212,9 +200,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         }
                         txtOutput.text = txtOutput.text.toString() + "\nInput fetched $input"
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            myVib.vibrate(VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE))
-                        }
-                        else{
+                            myVib.vibrate(
+                                VibrationEffect.createOneShot(
+                                    200,
+                                    VibrationEffect.DEFAULT_AMPLITUDE
+                                )
+                            )
+                        } else {
                             myVib.vibrate(200)
                         }
 
@@ -224,8 +216,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
                     btnTogglePower.isChecked = power
                     txtOutput.text = txtOutput.text.toString() + "\nPower is $power"
-                    var extract = "[0-9]+".toRegex().find(volume)
-                    var volumeval = extract?.value.toString()
+                    val extract = "[0-9]+".toRegex().find(volume)
+                    val volumeval = extract?.value.toString()
                     seek.progress = volumeval.toInt()
                     txtOutput.text = txtOutput.text.toString() + "\nVolume is $volumeval"
                     btnMute.isChecked = mute
@@ -238,7 +230,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             //Get local ip
             DatagramSocket().use { socket ->
                 with(socket) { connect(InetAddress.getByName("8.8.8.8"), 10002) }
-                ip = socket.getLocalAddress().getHostAddress().split(".") as MutableList<String>
+                ip = socket?.localAddress?.hostAddress?.split(".") as MutableList<String>
             }
             //Go through local addresses to find receiver
             txtOutput.text = ip.toString()
@@ -249,7 +241,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             for (i in 1..254) {
                 launch {
                     try {
-                        var connection = Socket()
+                        val connection = Socket()
                         connection.connect(InetSocketAddress(prefix + i.toString(), 8102), 500)
                         answer.send(i)
                         return@launch
@@ -299,9 +291,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 do {
                     try {
                         client.outputStream.write("?v\r?v\r".toByteArray())
-                        var response =
+                        val response =
                             BufferedReader(InputStreamReader(client.inputStream)).readLine()
-                        var extract = regex.find(response)
+                        val extract = regex.find(response)
                         volume = extract?.value.toString()
                         i++
                     } catch (e: IOException) {
@@ -367,12 +359,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             client = Socket()
             try {
                 client.connect(InetSocketAddress(ip[0], ip[1].toInt()), 500)
-                if (client.isConnected){
+                if (client.isConnected) {
                     client.keepAlive = true
-                address.add(ip[0])
-                address.add(ip[1])}
+                    address.add(ip[0])
+                    address.add(ip[1])
+                }
             } catch (e: IOException) {
-                Log.e("Connection",e.toString())
+                Log.e("Connection", e.toString())
                 //cancel("Could not connect")
             }
 
@@ -391,9 +384,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     } catch (e: IOException) {
                         Log.e("Connection", "Could not fetch status")
                     }
-                }
-                else{
-                    txtOutput.text = txtOutput.text.toString() + "\nCould not connect to:\n" + ip[0] + ":" + ip[1]
+                } else {
+                    txtOutput.text =
+                        txtOutput.text.toString() + "\nCould not connect to:\n" + ip[0] + ":" + ip[1]
                 }
             }
         }
@@ -436,31 +429,38 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         }
         //Button Listener actions
-        btnBT.setOnClickListener{myVib.vibrate(50)
+        btnBT.setOnClickListener {
+            myVib.vibrate(50)
             changeInput(txtOutput, "33fn")
 
         }
-        btniPod.setOnClickListener{myVib.vibrate(50)
+        btniPod.setOnClickListener {
+            myVib.vibrate(50)
             changeInput(txtOutput, "17fn")
 
         }
-        btnNet.setOnClickListener{myVib.vibrate(50)
+        btnNet.setOnClickListener {
+            myVib.vibrate(50)
             changeInput(txtOutput, "26fn")
 
         }
-        btnSpotify.setOnClickListener{myVib.vibrate(50)
+        btnSpotify.setOnClickListener {
+            myVib.vibrate(50)
             changeInput(txtOutput, "53fn")
 
         }
-        btnMHL.setOnClickListener{myVib.vibrate(50)
+        btnMHL.setOnClickListener {
+            myVib.vibrate(50)
             changeInput(txtOutput, "34fn")
 
         }
-        btnTuner.setOnClickListener{myVib.vibrate(50)
+        btnTuner.setOnClickListener {
+            myVib.vibrate(50)
             changeInput(txtOutput, "02fn")
 
         }
-        btnAll.setOnClickListener{myVib.vibrate(50)
+        btnAll.setOnClickListener {
+            myVib.vibrate(50)
             changeInput(txtOutput, "fu")
             try {
                 power?.let { it1 ->
@@ -477,22 +477,28 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 txtOutput.text = txtOutput.text.toString() + "\nError fetching status"
             }
         }
-        btnBD.setOnClickListener{myVib.vibrate(50)
+        btnBD.setOnClickListener {
+            myVib.vibrate(50)
             changeInput(txtOutput, "25fn")
         }
-        btnDVD.setOnClickListener{myVib.vibrate(50)
+        btnDVD.setOnClickListener {
+            myVib.vibrate(50)
             changeInput(txtOutput, "04fn")
         }
-        btnSat.setOnClickListener{myVib.vibrate(50)
+        btnSat.setOnClickListener {
+            myVib.vibrate(50)
             changeInput(txtOutput, "06fn")
         }
-        btnHDMI.setOnClickListener{myVib.vibrate(50)
+        btnHDMI.setOnClickListener {
+            myVib.vibrate(50)
             changeInput(txtOutput, "31fn")
         }
-        btnTV.setOnClickListener{myVib.vibrate(50)
+        btnTV.setOnClickListener {
+            myVib.vibrate(50)
             changeInput(txtOutput, "05fn")
         }
-        btnCD.setOnClickListener{myVib.vibrate(50)
+        btnCD.setOnClickListener {
+            myVib.vibrate(50)
             changeInput(txtOutput, "01fn")
         }
         txtInput.setOnKeyListener(View.OnKeyListener { v, keyCode, event ->
@@ -500,12 +506,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 //Perform Code
                 myVib.vibrate(50)
                 ip.clear()
-                var textToAdd = txtInput.text.toString().split(" ", ":", limit = 0)
+                val textToAdd = txtInput.text.toString().split(" ", ":", limit = 0)
                 if (textToAdd.size == 2) {
                     ip.add(textToAdd[0])
                     ip.add(textToAdd[1])
                 } else if (textToAdd.size == 1) {
-                    if (textToAdd[0].isNullOrEmpty()) {
+                    if (textToAdd[0].isEmpty()) {
                         txtOutput.text = txtOutput.text.toString() + "\nYou must specify a host"
                     } else {
                         ip.add(textToAdd[0])
@@ -515,15 +521,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
                 txtOutput.text = txtOutput.text.toString() + "\n" + ip.toString()
                 if (ip.size > 0) {
-                    if(!(client.inetAddress?.toString() == ip[0]) && !(client.port.toString() == ip[1])){
+                    if (!(client.inetAddress?.toString() == ip[0]) && !(client.port.toString() == ip[1])) {
                         try {
                             client.close()
                             connect(ip).start()
                         } catch (e: IOException) {
                             txtOutput.text = txtOutput.text.toString() + "\nCould not connect"
-                        }}
-                    else{
-                        txtOutput.text = txtOutput.text.toString() + "\nAlready connected to:\n${ip[0]}:${ip[1]}"
+                        }
+                    } else {
+                        txtOutput.text =
+                            txtOutput.text.toString() + "\nAlready connected to:\n${ip[0]}:${ip[1]}"
                     }
                 }
 
@@ -532,14 +539,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
             false
         })
-        btnConnect.setOnClickListener{myVib.vibrate(50)
+        btnConnect.setOnClickListener {
+            myVib.vibrate(50)
             ip.clear()
-            var textToAdd = txtInput.text.toString().split(" ", ":", limit = 0)
+            val textToAdd = txtInput.text.toString().split(" ", ":", limit = 0)
             if (textToAdd.size == 2) {
                 ip.add(textToAdd[0])
                 ip.add(textToAdd[1])
             } else if (textToAdd.size == 1) {
-                if (textToAdd[0].isNullOrEmpty()) {
+                if (textToAdd[0].isEmpty()) {
                     txtOutput.text = txtOutput.text.toString() + "\nYou must specify a host"
                 } else {
                     ip.add(textToAdd[0])
@@ -549,15 +557,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             txtOutput.text = txtOutput.text.toString() + "\n" + ip.toString()
             if (ip.size > 0) {
-                if(!(client.inetAddress?.toString() == ip[0]) && !(client.port.toString() == ip[1])){
-                try {
-                    client.close()
-                    connect(ip).start()
-                } catch (e: IOException) {
-                    txtOutput.text = txtOutput.text.toString() + "\nCould not connect"
-                }}
-                else{
-                    txtOutput.text = txtOutput.text.toString() + "\nAlready connected to:\n${ip[0]}:${ip[1]}"
+                if (!(client.inetAddress?.toString() == ip[0]) && !(client.port.toString() == ip[1])) {
+                    try {
+                        client.close()
+                        connect(ip).start()
+                    } catch (e: IOException) {
+                        txtOutput.text = txtOutput.text.toString() + "\nCould not connect"
+                    }
+                } else {
+                    txtOutput.text =
+                        txtOutput.text.toString() + "\nAlready connected to:\n${ip[0]}:${ip[1]}"
                 }
             }
         }
@@ -565,18 +574,20 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             if (keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
                 //Perform Code
                 myVib.vibrate(50)
-                var command = editTextCommand.text.toString().trim()
+                val command = editTextCommand.text.toString().trim()
                 sendCommand(txtOutput, command)
                 return@OnKeyListener true
             }
             false
         })
 
-        btnSendCommand.setOnClickListener{myVib.vibrate(50)
-            var command = editTextCommand.text.toString().trim()
+        btnSendCommand.setOnClickListener {
+            myVib.vibrate(50)
+            val command = editTextCommand.text.toString().trim()
             sendCommand(txtOutput, command)
         }
-        btnTogglePower.setOnClickListener{myVib.vibrate(50)
+        btnTogglePower.setOnClickListener {
+            myVib.vibrate(50)
             if (btnTogglePower.isChecked) {
                 sendCommand(txtOutput, "po")
             } else {
@@ -584,7 +595,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
 
         }
-        btnMute.setOnClickListener{myVib.vibrate(50)
+        btnMute.setOnClickListener {
+            myVib.vibrate(50)
             Thread(Runnable {
                 if (client.isConnected) {
                     if (btnMute.isChecked) {
@@ -653,24 +665,24 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.nav_main -> {
                 myVib.vibrate(50)
                 Log.e("Main", "Click.")
-                }
+            }
 
             R.id.nav_menu -> {
                 myVib.vibrate(50)
                 Log.e("Menu", "Click.")
-                Intent(this, com.beboe.pioneerremote.Menu::class.java).also{
-                    if(address.size == 2) {
+                Intent(this, com.beboe.pioneerremote.Menu::class.java).also {
+                    if (address.size == 2) {
                         it.putExtra("EXTRA_IP", address[0])
                         it.putExtra("EXTRA_PORT", address[1].toInt())
                     }
                     startActivity(it)
                     finish()
-                    }
+                }
             }
-            }
+        }
         drawer.closeDrawer(GravityCompat.START)
         return true
 
-}
+    }
 
 }

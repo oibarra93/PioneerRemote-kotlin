@@ -1,32 +1,21 @@
 package com.beboe.pioneerremote
 
 import android.app.AlertDialog
-import android.os.Vibrator
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
-import android.os.VibrationEffect
+import android.os.Vibrator
 import android.util.Log
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import co.zsmb.materialdrawerkt.builders.accountHeader
-import co.zsmb.materialdrawerkt.builders.drawer
-import co.zsmb.materialdrawerkt.draweritems.badgeable.primaryItem
-import co.zsmb.materialdrawerkt.draweritems.divider
-import co.zsmb.materialdrawerkt.draweritems.profile.profile
 import com.google.android.material.navigation.NavigationView
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.io.IOException
 import java.net.InetSocketAddress
 import java.net.Socket
@@ -40,16 +29,17 @@ class Menu : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListene
 
 
 
+    @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_menu)
-        var toolbar = findViewById<Toolbar>(R.id.toolbar)
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         drawer = findViewById(R.id.drawer_layout)
-        var nagivationView = findViewById<NavigationView>(R.id.nav_view)
+        val nagivationView = findViewById<NavigationView>(R.id.nav_view)
         nagivationView.setNavigationItemSelectedListener(this)
         nagivationView.bringToFront();
-        var toggle = ActionBarDrawerToggle(
+        val toggle = ActionBarDrawerToggle(
             this@Menu,
             drawer,
             toolbar,
@@ -60,22 +50,22 @@ class Menu : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListene
         drawer.addDrawerListener(toggle)
         toggle.syncState()
         myVib = this.getSystemService(VIBRATOR_SERVICE) as Vibrator
-        var btnMenuConnect = findViewById<Button>(R.id.btnMenuConnect)
-        var btnAudioMenu = findViewById<Button>(R.id.btnAudioMenu)
-        var btnVideoMenu = findViewById<Button>(R.id.btnVideoMenu)
-        var btnHomeMenu = findViewById<Button>(R.id.btnHomeMenu)
-        var btnReturn = findViewById<Button>(R.id.btnReturn)
-        var btnOk = findViewById<ImageButton>(R.id.btnOk)
-        var btnLeft = findViewById<ImageButton>(R.id.btnLeft)
-        var btnRight = findViewById<ImageButton>(R.id.btnRight)
-        var btnUp = findViewById<ImageButton>(R.id.btnUp)
-        var btnDown = findViewById<ImageButton>(R.id.btnDown)
-        var btnAdv = findViewById<Button>(R.id.btnAdv)
-        var btnAuto = findViewById<Button>(R.id.btnAuto)
-        var btnSurr = findViewById<Button>(R.id.btnSurr)
-        var ip = intent.getStringExtra("EXTRA_IP")
+        val btnMenuConnect = findViewById<Button>(R.id.btnMenuConnect)
+        val btnAudioMenu = findViewById<Button>(R.id.btnAudioMenu)
+        val btnVideoMenu = findViewById<Button>(R.id.btnVideoMenu)
+        val btnHomeMenu = findViewById<Button>(R.id.btnHomeMenu)
+        val btnReturn = findViewById<Button>(R.id.btnReturn)
+        val btnOk = findViewById<ImageButton>(R.id.btnOk)
+        val btnLeft = findViewById<ImageButton>(R.id.btnLeft)
+        val btnRight = findViewById<ImageButton>(R.id.btnRight)
+        val btnUp = findViewById<ImageButton>(R.id.btnUp)
+        val btnDown = findViewById<ImageButton>(R.id.btnDown)
+        val btnAdv = findViewById<Button>(R.id.btnAdv)
+        val btnAuto = findViewById<Button>(R.id.btnAuto)
+        val btnSurr = findViewById<Button>(R.id.btnSurr)
+        val ip = intent.getStringExtra("EXTRA_IP")
         val port = intent.getIntExtra("EXTRA_PORT", 8102)
-        var address :MutableList<String> = mutableListOf()
+        val address :MutableList<String> = mutableListOf()
         if (ip != null) {
             address.add(ip)
         }
@@ -163,7 +153,7 @@ class Menu : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListene
                     }
                 .setNeutralButton(
                     android.R.string.cancel, null)
-                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setIcon(android.R.drawable.ic_menu_help)
                 .show()
         }
 
