@@ -47,11 +47,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#000000"
-        android:visibility="visible">
+        android:visibility="visible"
+        android:padding="20dp">
 
 
         <LinearLayout
-            android:padding="40dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
@@ -59,7 +59,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="UselessParent">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -76,21 +77,21 @@
                     android:id="@+id/linearLayout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="2dp"
+                    android:layout_marginEnd="2dp"
                     android:layout_weight=".5"
                     android:baselineAligned="false"
                     android:orientation="vertical"
-                    android:paddingLeft="0dp"
-                    android:paddingRight="2dp">
+                    android:paddingStart="0dp"
+                    android:paddingEnd="2dp">
 
                     <TextView
                         android:id="@+id/textView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:text="Hostname"
+                        android:text="@string/hostname"
                         android:textColor="#FFFFFF"
-                        android:textSize="20dp" />
+                        android:textSize="20sp" />
 
                     <EditText
                         android:id="@+id/editTextHostname"
@@ -104,7 +105,9 @@
                         android:textColor="#000000"
                         android:textColorHint="#AAAAAA"
                         android:textIsSelectable="true"
-                        android:textSize="24dp" />
+                        android:textSize="24sp"
+                        android:hint="@string/hostnameHint"
+                        android:autofillHints="" />
 
                     <Button
                         android:id="@+id/btnConnect"
@@ -113,18 +116,18 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:layout_marginTop="20dp"
-                        android:text="Connect"
-                        android:textSize="20dp" />
+                        android:text="@string/connect"
+                        android:textSize="20sp" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="2dp"
+                    android:layout_marginStart="2dp"
                     android:layout_weight=".5"
                     android:orientation="vertical"
-                    android:paddingLeft="2dp"
-                    android:paddingRight="0dp"
+                    android:paddingStart="2dp"
+                    android:paddingEnd="0dp"
                     app:layout_constraintEnd_toStartOf="@+id/linearLayout">
 
                     <TextView
@@ -132,10 +135,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:text="Custom Commands"
+                        android:text="@string/custom_commands"
                         android:textAlignment="center"
                         android:textColor="#FFFFFF"
-                        android:textSize="20dp" />
+                        android:textSize="20sp" />
 
                     <EditText
                         android:id="@+id/editTextCommand"
@@ -148,7 +151,9 @@
                         android:inputType="textPersonName"
                         android:textColor="#000000"
                         android:textIsSelectable="true"
-                        android:textSize="24dp" />
+                        android:textSize="24sp"
+                        android:hint="@string/editTextHint"
+                        android:autofillHints="" />
 
                     <Button
                         android:id="@+id/btnSendCommand"
@@ -157,8 +162,8 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:layout_marginTop="20dp"
-                        android:text="Send"
-                        android:textSize="20dp"
+                        android:text="@string/send"
+                        android:textSize="20sp"
                         tools:ignore="OnClick" />
 
                 </LinearLayout>
@@ -193,7 +198,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checkable="true"
-                        android:text="BD" />
+                        android:text="@string/bd" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/btnDVD"
@@ -201,7 +206,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checkable="true"
-                        android:text="DVD" />
+                        android:text="@string/dvd" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/btnSat"
@@ -209,14 +214,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checkable="true"
-                        android:text="SAT/CBL" />
+                        android:text="@string/sat_cbl" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/btnHDMI"
                         style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="HMDI "
+                        android:text="@string/hmdi"
                         app:chipIcon="@android:drawable/ic_menu_rotate"
                         app:chipIconEnabled="true" />
 
@@ -225,40 +230,40 @@
                         style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="iPod/USB"
-                        android:textSize="20dp" />
+                        android:text="@string/ipod_usb"
+                        android:textSize="20sp" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/btnBT"
                         style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="BT"
-                        android:textSize="20dp" />
+                        android:text="@string/bt"
+                        android:textSize="20sp" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/btnMHL"
                         style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="MHL"
-                        android:textSize="20dp" />
+                        android:text="@string/mhl"
+                        android:textSize="20sp" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/btnSpotify"
                         style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Spotify"
-                        android:textSize="20dp" />
+                        android:text="@string/spotify"
+                        android:textSize="20sp" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/btnNet"
                         style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Internet Radio"
-                        android:textSize="20dp"
+                        android:text="@string/internet_radio"
+                        android:textSize="20sp"
                         app:chipIcon="@android:drawable/ic_menu_rotate"
                         app:chipIconVisible="true" />
 
@@ -267,15 +272,15 @@
                         style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Tuner"
-                        android:textSize="20dp" />
+                        android:text="@string/tuner"
+                        android:textSize="20sp" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/btnTV"
                         style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="TV" />
+                        android:text="@string/tv" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/btnCD"
@@ -283,7 +288,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checkable="true"
-                        android:text="CD" />
+                        android:text="@string/cd" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/btnCyclic"
@@ -291,7 +296,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checkable="true"
-                        android:text="All"
+                        android:text="@string/all"
                         app:checkedIconEnabled="false"
                         app:chipIcon="@android:drawable/ic_menu_rotate"
                         app:chipIconEnabled="true" />
@@ -311,10 +316,10 @@
                         android:layout_height="match_parent"
                         android:layout_weight=".5"
                         android:checked="true"
-                        android:text="ToggleButton"
-                        android:textOff="Power off"
-                        android:textOn="Power On"
-                        android:textSize="24dp" />
+                        android:text="@string/togglebutton"
+                        android:textOff="@string/power_off"
+                        android:textOn="@string/power_on"
+                        android:textSize="24sp" />
 
                     <ToggleButton
                         android:id="@+id/btnMute"
@@ -322,10 +327,10 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:checked="false"
-                        android:text="ToggleButton"
-                        android:textOff="Mute Off"
-                        android:textOn="Mute On"
-                        android:textSize="24dp" />
+                        android:text="@string/togglebutton"
+                        android:textOff="@string/mute_off"
+                        android:textOn="@string/mute_on"
+                        android:textSize="24sp" />
 
 
                 </LinearLayout>
@@ -346,15 +351,7 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginRight="5dp"
                 android:background="@drawable/borders"
-                android:fillViewport="true"
-                android:isScrollContainer="true"
-                android:nestedScrollingEnabled="true"
-                android:overScrollMode="ifContentScrolls"
-                android:scrollbarAlwaysDrawVerticalTrack="true"
-                android:scrollbarStyle="outsideOverlay"
-                android:scrollbars="vertical"
-                android:textAlignment="center"
-                android:textDirection="ltr">
+                >
 
                 <TextView
                     android:id="@+id/txtboxResponse"
@@ -364,29 +361,16 @@
                     android:duplicateParentState="false"
                     android:ems="10"
                     android:enabled="true"
-                    android:fadeScrollbars="false"
                     android:fontFamily="@font/courier_prime"
                     android:gravity="bottom"
-                    android:isScrollContainer="false"
-                    android:lines="5"
-                    android:maxLines="5"
+                    android:lines="8"
+                    android:maxLines="8"
                     android:nestedScrollingEnabled="false"
-                    android:overScrollMode="always"
-                    android:scrollIndicators="right"
-                    android:scrollbarAlwaysDrawHorizontalTrack="true"
-                    android:scrollbarAlwaysDrawVerticalTrack="true"
-                    android:scrollbarFadeDuration="1000"
-                    android:scrollbarSize="6dp"
-                    android:scrollbarStyle="outsideOverlay"
-                    android:scrollbars="vertical"
-                    android:scrollHorizontally="false"
-                    android:selectAllOnFocus="false"
-                    android:text="Response:"
+                    android:text="@string/response"
                     android:textAlignment="gravity"
                     android:textColor="#FFFFFF"
                     android:textIsSelectable="true"
-                    android:textSize="18sp"
-                    android:verticalScrollbarPosition="right" />
+                    android:textSize="18sp" />
             </ScrollView>
 
         </LinearLayout>

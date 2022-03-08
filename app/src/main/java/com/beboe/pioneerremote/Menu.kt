@@ -3,12 +3,15 @@ package com.beboe.pioneerremote
 import android.app.AlertDialog
 import android.os.Vibrator
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.os.VibrationEffect
 import android.util.Log
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -34,6 +37,7 @@ class Menu : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListene
     companion object{
 
     }
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -81,9 +85,7 @@ class Menu : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListene
             MainActivity.client = Socket()
             try {
                 if (ip.isNullOrEmpty()) {
-
                     Log.e("Menu", "ip is Null or Empty")
-                    //ip = "192.168.0.21"
                 }
                 else
                     MainActivity.client.connect(InetSocketAddress(ip, port), 200)
@@ -167,6 +169,7 @@ class Menu : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListene
 
 
 
+
         }
 
     override fun onBackPressed() {
@@ -187,6 +190,7 @@ class Menu : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListene
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         myVib = this.getSystemService(VIBRATOR_SERVICE) as Vibrator
+        myVib.vibrate(50)
         when (item.itemId) {
             R.id.nav_main -> {
                 myVib.vibrate(50)

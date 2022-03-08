@@ -1,33 +1,23 @@
 package com.beboe.pioneerremote
 
-import android.app.AlertDialog
-import android.app.Dialog
-import android.content.DialogInterface
+import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.*
 import android.text.method.ScrollingMovementMethod
 import android.util.Log
-import android.view.Gravity
-import android.view.Menu
-import android.view.MenuItem
+import android.view.*
+import android.view.inputmethod.InputMethodManager
 import android.widget.*
-import android.widget.Toast.LENGTH_SHORT
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.fragment.app.DialogFragment
-import co.zsmb.materialdrawerkt.builders.accountHeader
-import co.zsmb.materialdrawerkt.builders.drawer
-import co.zsmb.materialdrawerkt.draweritems.badgeable.primaryItem
-import co.zsmb.materialdrawerkt.draweritems.divider
-import co.zsmb.materialdrawerkt.draweritems.profile.profile
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.navigation.NavigationView
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import java.io.BufferedReader
@@ -37,6 +27,7 @@ import java.net.DatagramSocket
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
+
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private lateinit var drawer: DrawerLayout
@@ -79,9 +70,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             }
         }
-
     }
 
+    fun Context.hideKeyboard(view: View) {
+        val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+    }
     override fun onSaveInstanceState(savedInstanceState: Bundle) {
         super.onSaveInstanceState(savedInstanceState)
         // Save UI state changes to the savedInstanceState.
@@ -105,6 +99,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val port = savedInstanceState.getString("SAVE_PORT")
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -155,17 +150,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val seek = findViewById<SeekBar>(R.id.seekBarVolume)
         val inputGroup = findViewById<ChipGroup>(R.id.chipGroup)
         txtOutput.movementMethod = ScrollingMovementMethod()
-        //var power = false
-        //var volume = ""
-        //var mute = false
-
 
         //Initialize the network connection by scanning the local network
-        var targetIP = ""
+        var targetIP: String
         val mainLooper = Looper.getMainLooper()
         var ip: MutableList<String> = mutableListOf()
-        var prefix = ""
+        var prefix: String
 
+        @RequiresApi(Build.VERSION_CODES.O)
         fun getStatus(power: Boolean, volume: String, mute: Boolean) =
             GlobalScope.launch(Dispatchers.IO) {
                 var input = ""
@@ -219,9 +211,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             }
                         }
                         txtOutput.text = txtOutput.text.toString() + "\nInput fetched $input"
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            myVib.vibrate(VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE))
+                        }
+                        else{
+                            myVib.vibrate(200)
+                        }
+
                     } else {
                         Log.e("Connection", "Could not fetch input, not connected")
                     }
+
                     btnTogglePower.isChecked = power
                     txtOutput.text = txtOutput.text.toString() + "\nPower is $power"
                     var extract = "[0-9]+".toRegex().find(volume)
@@ -237,7 +237,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         fun init() = GlobalScope.launch(Dispatchers.IO) {
             //Get local ip
             DatagramSocket().use { socket ->
-                socket.connect(InetAddress.getByName("8.8.8.8"), 10002)
+                with(socket) { connect(InetAddress.getByName("8.8.8.8"), 10002) }
                 ip = socket.getLocalAddress().getHostAddress().split(".") as MutableList<String>
             }
             //Go through local addresses to find receiver
@@ -250,7 +250,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 launch {
                     try {
                         var connection = Socket()
-                        connection.connect(InetSocketAddress(prefix + i.toString(), 8102), 200)
+                        connection.connect(InetSocketAddress(prefix + i.toString(), 8102), 500)
                         answer.send(i)
                         return@launch
                     } catch (e: Exception) {
@@ -366,19 +366,20 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         fun connect(ip: List<String>) = GlobalScope.launch(Dispatchers.IO) {
             client = Socket()
             try {
-                client.connect(InetSocketAddress(ip[0], ip[1].toInt()), 200)
-                if (client.isConnected)
+                client.connect(InetSocketAddress(ip[0], ip[1].toInt()), 500)
+                if (client.isConnected){
                     client.keepAlive = true
                 address.add(ip[0])
-                address.add(ip[1])
+                address.add(ip[1])}
             } catch (e: IOException) {
-                cancel("Could not connect")
+                Log.e("Connection",e.toString())
+                //cancel("Could not connect")
             }
 
             launch(Dispatchers.Main) {
                 if (client.isConnected) {
                     txtOutput.text =
-                        txtOutput.text.toString() + "\nSuccessfully connected to " + ip[0] + ":" + ip[1]
+                        txtOutput.text.toString() + "\nSuccessfully connected to:\n" + ip[0] + ":" + ip[1]
                     try {
                         power?.let {
                             volume?.let { it1 ->
@@ -390,6 +391,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     } catch (e: IOException) {
                         Log.e("Connection", "Could not fetch status")
                     }
+                }
+                else{
+                    txtOutput.text = txtOutput.text.toString() + "\nCould not connect to:\n" + ip[0] + ":" + ip[1]
                 }
             }
         }
@@ -491,7 +495,43 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         btnCD.setOnClickListener{myVib.vibrate(50)
             changeInput(txtOutput, "01fn")
         }
+        txtInput.setOnKeyListener(View.OnKeyListener { v, keyCode, event ->
+            if (keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
+                //Perform Code
+                myVib.vibrate(50)
+                ip.clear()
+                var textToAdd = txtInput.text.toString().split(" ", ":", limit = 0)
+                if (textToAdd.size == 2) {
+                    ip.add(textToAdd[0])
+                    ip.add(textToAdd[1])
+                } else if (textToAdd.size == 1) {
+                    if (textToAdd[0].isNullOrEmpty()) {
+                        txtOutput.text = txtOutput.text.toString() + "\nYou must specify a host"
+                    } else {
+                        ip.add(textToAdd[0])
+                        ip.add("8102")
+                    }
+                }
 
+                txtOutput.text = txtOutput.text.toString() + "\n" + ip.toString()
+                if (ip.size > 0) {
+                    if(!(client.inetAddress?.toString() == ip[0]) && !(client.port.toString() == ip[1])){
+                        try {
+                            client.close()
+                            connect(ip).start()
+                        } catch (e: IOException) {
+                            txtOutput.text = txtOutput.text.toString() + "\nCould not connect"
+                        }}
+                    else{
+                        txtOutput.text = txtOutput.text.toString() + "\nAlready connected to:\n${ip[0]}:${ip[1]}"
+                    }
+                }
+
+                hideKeyboard(v)
+                return@OnKeyListener true
+            }
+            false
+        })
         btnConnect.setOnClickListener{myVib.vibrate(50)
             ip.clear()
             var textToAdd = txtInput.text.toString().split(" ", ":", limit = 0)
@@ -509,13 +549,28 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             txtOutput.text = txtOutput.text.toString() + "\n" + ip.toString()
             if (ip.size > 0) {
+                if(!(client.inetAddress?.toString() == ip[0]) && !(client.port.toString() == ip[1])){
                 try {
+                    client.close()
                     connect(ip).start()
                 } catch (e: IOException) {
                     txtOutput.text = txtOutput.text.toString() + "\nCould not connect"
+                }}
+                else{
+                    txtOutput.text = txtOutput.text.toString() + "\nAlready connected to:\n${ip[0]}:${ip[1]}"
                 }
             }
         }
+        editTextCommand.setOnKeyListener(View.OnKeyListener { v, keyCode, event ->
+            if (keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
+                //Perform Code
+                myVib.vibrate(50)
+                var command = editTextCommand.text.toString().trim()
+                sendCommand(txtOutput, command)
+                return@OnKeyListener true
+            }
+            false
+        })
 
         btnSendCommand.setOnClickListener{myVib.vibrate(50)
             var command = editTextCommand.text.toString().trim()
@@ -572,55 +627,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         })
 
-        /* drawer{
-
-             accountHeader{
-
-                     profile("Pioneer Remote"){
-                     icon = R.drawable.logo
-                 }
-             }
-             primaryItem("Connection") {
-                 onClick { _ ->
-                     Log.e("Drawer","Click.")
-                     /*init().cancel()
-                     power?.let { volume?.let { it1 -> mute?.let { it2 ->
-                         getStatus(it, it1,
-                             it2
-                         ).cancel()
-                     } } }
-                     connect(ip).cancel()*/
-                     val extraIp = ip[0]
-                     val extraPort = ip[1].toInt()
-                     Intent(this@MainActivity, Menu::class.java).also{
-                         it.putExtra("EXTRA_IP",extraIp)
-                         it.putExtra("EXTRA_PORT", extraPort)
-                         startActivity(intent)
-                         finish()
-                     }
-
-                     false
-                 }
-             }
-             divider{}
-             primaryItem("Home Menu Controls") {
-                 onClick { _ ->
-                     Log.e("Drawer","Click.")
-                     /*init().cancel()
-                     power?.let { volume?.let { it1 -> mute?.let { it2 ->
-                         getStatus(it, it1,
-                             it2
-                         ).cancel()
-                     } } }
-                     connect(ip).cancel()*/
-                     val context = this@MainActivity
-                     val intent = Intent(context, Menu::class.java)
-                     context.startActivity(intent)
-                     finish()
-                     false
-                 }
-             }
-         } */
         fun saveInstance() {
             savedInstanceState?.putString("SAVED_IP", address[0])
             savedInstanceState?.putString("SAVED_PORT", address[1])
@@ -652,11 +658,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.nav_menu -> {
                 myVib.vibrate(50)
                 Log.e("Menu", "Click.")
-                val extraIp = address[0]
-                val extraPort = address[1].toInt()
                 Intent(this, com.beboe.pioneerremote.Menu::class.java).also{
-                    it.putExtra("EXTRA_IP",extraIp)
-                    it.putExtra("EXTRA_PORT", extraPort)
+                    if(address.size == 2) {
+                        it.putExtra("EXTRA_IP", address[0])
+                        it.putExtra("EXTRA_PORT", address[1].toInt())
+                    }
                     startActivity(it)
                     finish()
                     }
@@ -666,4 +672,5 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return true
 
 }
+
 }
