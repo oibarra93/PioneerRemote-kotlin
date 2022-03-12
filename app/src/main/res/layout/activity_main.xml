@@ -148,6 +148,7 @@
                         android:layout_marginTop="8dp"
                         android:background="#FFFFFF"
                         android:ems="10"
+                        android:textColorHint="#AAAAAA"
                         android:inputType="textPersonName"
                         android:textColor="#000000"
                         android:textIsSelectable="true"
@@ -337,11 +338,17 @@
 
                 <SeekBar
                     android:id="@+id/seekBarVolume"
-                    style="@android:style/Widget.SeekBar"
+                    style="@android:style/Widget.Holo.SeekBar"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
+                    android:maxHeight="400dp"
+                    android:hapticFeedbackEnabled="true"
                     android:max="185"
-                    android:rotation="0" />
+                    android:progressTint="@color/purple_500"
+                    android:rotation="0"
+                    android:thumbTint="@color/purple_700"
+                    />
+
             </LinearLayout>
 
             <ScrollView

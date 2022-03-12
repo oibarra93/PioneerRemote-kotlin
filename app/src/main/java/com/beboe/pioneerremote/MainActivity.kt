@@ -9,7 +9,9 @@ import android.content.Intent
 import android.os.*
 import android.text.method.ScrollingMovementMethod
 import android.util.Log
-import android.view.*
+import android.view.KeyEvent
+import android.view.MenuItem
+import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.annotation.RequiresApi
@@ -36,7 +38,7 @@ import java.net.Socket
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private lateinit var drawer: DrawerLayout
     private lateinit var myVib: Vibrator
-
+    private lateinit var seek: SeekBar
     companion object {
 
         var address: MutableList<String> = mutableListOf()
@@ -109,7 +111,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val btnDVD = findViewById<Chip>(R.id.btnDVD)
         val btnTogglePower = findViewById<ToggleButton>(R.id.toggleButtonPower)
         val btnMute = findViewById<ToggleButton>(R.id.btnMute)
-        val seek = findViewById<SeekBar>(R.id.seekBarVolume)
+        seek = findViewById(R.id.seekBarVolume)
         val inputGroup = findViewById<ChipGroup>(R.id.chipGroup)
         txtOutput.movementMethod = ScrollingMovementMethod()
 
@@ -127,7 +129,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 if (client.isConnected) {
                     do {
                         try {
-                            client.outputStream.write(("?f\r?f\r").toByteArray())
+                            client.outputStream.write(("?f\r").toByteArray())
                             input = BufferedReader(InputStreamReader(client.inputStream)).readLine()
                         } catch (e: IOException) {
                             //Toast.makeText(this@MainActivity,"Could not fetch input",LENGTH_SHORT).show()
@@ -243,17 +245,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 cancel("Could not connect")
             }
 
-            //Fetch input status
-            if (client.isConnected) {
-                try {
-
-                    client.outputStream.write(("?f\r?f\r").toByteArray())
-
-                } catch (e: IOException) {
-                    Log.e("Connection", "Could not fetch input")
-                }
-            }
-
             //Fetch volume status
             volume = ""
             val regex = Regex("[VOL]+[0-9]+")
@@ -261,7 +252,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 var i = 0
                 do {
                     try {
-                        client.outputStream.write("?v\r?v\r".toByteArray())
+                        client.outputStream.write("?v\r".toByteArray())
                         val response =
                             BufferedReader(InputStreamReader(client.inputStream)).readLine()
                         val extract = regex.find(response)
@@ -280,7 +271,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 var i = 0
                 do {
                     try {
-                        client.outputStream.write("?p\r?p\r".toByteArray())
+                        client.outputStream.write("?p\r".toByteArray())
                         powerresponse =
                             BufferedReader(InputStreamReader(client.inputStream)).readLine()
                         if (powerresponse.contains("PWR0")
@@ -318,6 +309,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             //Update UI on main thread
             launch(Dispatchers.Main) {
                 getStatus(power!!, volume!!, mute!!).join()
+                if(client.isConnected)
+                txtOutput.text = txtOutput.text.toString() + "\nConnected to:\n$targetIP:8102"
             }
         }
 
@@ -585,7 +578,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
             ).start()
         }
-        seek?.setOnSeekBarChangeListener(object :
+        seek.setOnSeekBarChangeListener(object :
             SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(
                 seek: SeekBar,
@@ -596,10 +589,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             override fun onStartTrackingTouch(seek: SeekBar) {
                 // write custom code for progress is started
+                myVib.vibrate(50)
             }
 
             override fun onStopTrackingTouch(seek: SeekBar) {
                 // write custom code for progress is stopped
+                myVib.vibrate(50)
                 when {
                     seek.progress >= 100 -> {
                         sendCommand(txtOutput, seek.progress.toString() + "vl")
@@ -623,15 +618,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
         saveInstance()
 
+
+
     }
 
-    override fun onBackPressed() {
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START)
-        } else {
-            super.onBackPressed()
-        }
-    }
+
 
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
@@ -658,6 +649,57 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         drawer.closeDrawer(GravityCompat.START)
         return true
 
+    }
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+
+        when (keyCode) {
+            KeyEvent.KEYCODE_VOLUME_DOWN -> {
+                if(client.isConnected){
+                if(seek.progress in 0..185){
+                val vol = seek.progress - 10
+                    when {
+                        seek.progress >= 100 -> {
+                            sendCommand(vol.toString() + "vl")
+                        }
+                        seek.progress >= 10 -> {
+                            sendCommand("0" + vol.toString() + "vl")
+                        }
+                        else -> {
+                            sendCommand("00" + vol.toString() + "vl")
+                        }
+                    }
+                    seek.progress = vol
+                }
+                }
+            }
+            KeyEvent.KEYCODE_VOLUME_UP -> {
+                if(client.isConnected){
+                if(seek.progress in 0..185){
+                val vol = seek.progress + 10
+                when {
+                    seek.progress >= 100 -> {
+                        sendCommand(vol.toString() + "vl")
+                    }
+                    seek.progress >= 10 -> {
+                        sendCommand("0" + vol.toString() + "vl")
+                    }
+                    else -> {
+                        sendCommand("00" + vol.toString() + "vl")
+                    }
+                }
+                seek.progress = vol
+            }
+            }
+            }
+            KeyEvent.KEYCODE_BACK -> {
+                if (drawer.isDrawerOpen(GravityCompat.START)) {
+                    drawer.closeDrawer(GravityCompat.START)
+                } else {
+                    super.onBackPressed()
+                }
+            }
+        }
+        return true
     }
 
 }

@@ -148,6 +148,7 @@
                         android:layout_marginTop="8dp"
                         android:background="#FFFFFF"
                         android:ems="10"
+                        android:textColorHint="#AAAAAA"
                         android:inputType="textPersonName"
                         android:textColor="#000000"
                         android:textIsSelectable="true"

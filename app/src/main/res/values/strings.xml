@@ -15,7 +15,7 @@
     <string name="custom_commands">Custom Commands</string>
     <string name="send">Send</string>
     <string name="hostname">Hostname</string>
-    <string name="hostnameHint">192.168.0.x</string>
+    <string name="hostnameHint">192.168.0.x:8102</string>
     <string name="connect">Connect</string>
     <string name="bd">BD</string>
     <string name="dvd">DVD</string>
