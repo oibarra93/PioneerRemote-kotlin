@@ -16,7 +16,7 @@
     <string name="send">Send</string>
     <string name="hostname">Hostname</string>
     <string name="hostnameHint">192.168.0.x:8102</string>
-    <string name="connect">Connect</string>
+    <string name="connect">Connect/AutoConnect</string>
     <string name="bd">BD</string>
     <string name="dvd">DVD</string>
     <string name="sat_cbl">SAT/CBL</string>

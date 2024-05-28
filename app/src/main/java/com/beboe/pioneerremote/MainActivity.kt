@@ -6,25 +6,46 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.os.*
+import android.os.Build
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.text.method.ScrollingMovementMethod
 import android.util.Log
 import android.view.KeyEvent
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.*
+import android.widget.Button
+import android.widget.EditText
+import android.widget.SeekBar
+import android.widget.TextView
+import android.widget.Toast
+import android.widget.ToggleButton
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.navigation.NavigationView
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.NonCancellable.cancel
+import kotlinx.coroutines.Runnable
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -116,7 +137,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         txtOutput.movementMethod = ScrollingMovementMethod()
 
         //Initialize the network connection by scanning the local network
-        var targetIP: String
+        var targetIP = ""
         val mainLooper = Looper.getMainLooper()
         var ip: MutableList<String> = mutableListOf()
         var prefix: String
@@ -202,48 +223,55 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 }
 
             }
-
-        fun init() = GlobalScope.launch(Dispatchers.IO) {
-            //Get local ip
+        fun init(){GlobalScope.launch(Dispatchers.IO) {try {
+            // Get local IP
             DatagramSocket().use { socket ->
-                with(socket) { connect(InetAddress.getByName("8.8.8.8"), 10002) }
-                ip = socket.localAddress?.hostAddress?.split(".") as MutableList<String>
+                socket.connect(InetAddress.getByName("8.8.8.8"), 10002)
+                ip = socket.localAddress?.hostAddress?.split(".")?.toMutableList() ?: mutableListOf()
             }
-            //Go through local addresses to find receiver
-            txtOutput.text = ip.toString()
-            prefix = ip[0] + "." + ip[1] + "." + ip[2] + "."
 
+            // Update UI with the IP address
+            withContext(Dispatchers.Main) {
+                txtOutput.text = ip.toString()
+            }
+
+            prefix = "${ip[0]}.${ip[1]}.${ip[2]}."
             val answer = Channel<Int>()
 
+            // Launch coroutines to find receiver
             for (i in 1..254) {
                 launch {
                     try {
-                        val connection = Socket()
-                        connection.connect(InetSocketAddress(prefix + i.toString(), 8102), 500)
-                        answer.send(i)
-                        return@launch
+                        Socket().use { connection ->
+                            connection.connect(InetSocketAddress("$prefix$i", 8102), 500)
+                            answer.send(i)
+                        }
                     } catch (e: Exception) {
                         Log.e("Connection", "Could not connect to address $i")
                     }
-
                 }
             }
 
-            val i = answer.receive()
+            val hit = answer.receive()
+            answer.close()
 
-
-            targetIP = prefix + i.toString()
+            targetIP = "$prefix$hit"
             client = Socket()
+
             try {
                 client.connect(InetSocketAddress(targetIP, 8102), 200)
                 if (client.isConnected) {
                     client.keepAlive = true
-                    address.add(targetIP)
-                    address.add("8102")
                 }
             } catch (e: IOException) {
-                cancel("Could not connect")
+                Log.e("Connection", "Could not connect to target IP")
+                return@launch
             }
+
+        } catch (e: Exception) {
+            Log.e("Init", "Error initializing connection", e)
+        }
+
 
             //Fetch volume status
             volume = ""
@@ -312,10 +340,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 if(client.isConnected)
                 txtOutput.text = txtOutput.text.toString() + "\nConnected to:\n$targetIP:8102"
             }
-        }
+        }}
 
         try {
-            init().start()
+            init()
         } catch (e: IOException) {
             txtOutput.text = txtOutput.text.toString() + "\nCould not find receiver"
         }
@@ -504,15 +532,31 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             false
         })
         btnConnect.setOnClickListener {
-            myVib.vibrate(50)
+        myVib.vibrate(50)
             ip.clear()
+            var autoIP = ""
             val textToAdd = txtInput.text.toString().split(" ", ":", limit = 0)
             if (textToAdd.size == 2) {
                 ip.add(textToAdd[0])
                 ip.add(textToAdd[1])
-            } else if (textToAdd.size == 1) {
+             }else if (textToAdd.size == 1) {
                 if (textToAdd[0].isEmpty()) {
-                    txtOutput.text = txtOutput.text.toString() + "\nYou must specify a host"
+                        try {
+                            GlobalScope.launch(Dispatchers.Main){
+                                lifecycleScope.launch {
+                                    try {
+                                        init()
+                                    } catch (e: Exception) {
+                                        Log.e("FindIP", "Error finding IP", e)
+                                    }
+                                }
+                                Log.i("IP is", ip.toString())
+                            }
+                    }
+                        catch (e:Exception){
+                            Log.e(e.toString(),e.toString())
+                        }
+                    txtOutput.text = txtOutput.text.toString() + "\n${ip}"
                 } else {
                     ip.add(textToAdd[0])
                     ip.add("8102")
@@ -525,7 +569,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     try {
                         client.close()
                         connect(ip).start()
-                    } catch (e: IOException) {
+                    } catch (e: Exception) {
+                        Log.e(e.toString(),e.toString())
                         txtOutput.text = txtOutput.text.toString() + "\nCould not connect"
                     }
                 } else {
