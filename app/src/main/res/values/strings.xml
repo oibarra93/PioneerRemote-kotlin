@@ -1,14 +1,7 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Pioneer Remote</string>
-    <string name="title_activity_menu_controls">MenuControls</string>
     <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
 
-    <string name="hello_first_fragment">Hello first fragment</string>
-    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="navigation_drawer_open">Open Navigation Drawer</string>
     <string name="navigation_drawer_close">Close Navigation Drawer</string>
     <string name="editTextHint">f?</string>
@@ -25,7 +18,7 @@
     <string name="bt">BT</string>
     <string name="mhl">MHL</string>
     <string name="spotify">Spotify</string>
-    <string name="internet_radio">Internet Radio</string>
+    <string name="internet_radio" tools:ignore="Typos">Internet Radio</string>
     <string name="tuner">Tuner</string>
     <string name="tv">TV</string>
     <string name="cd">CD</string>
@@ -48,4 +41,11 @@
     <string name="auto">AUTO</string>
     <string name="surround">SURROUND</string>
     <string name="advanced">ADVANCED</string>
+    <string name="splash_image">Splash Image</string>
+    <string name="banner_background_image">Banner background image</string>
+    <string name="connection">Connection</string>
+    <string name="home_menu_nav">Home Menu</string>
+    <string name="about">About</string>
+    <string name="pioneer_remote">Pioneer Remote</string>
+    <string name="info_beboe_com">info@beboe.com</string>
 </resources>

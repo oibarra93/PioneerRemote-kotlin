@@ -50,7 +50,7 @@ import java.net.InetSocketAddress
 import java.net.Socket
 
 
-@Suppress("DEPRECATION", "OPT_IN_IS_NOT_ENABLED")
+@Suppress("DEPRECATION")
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private lateinit var drawer: DrawerLayout
     private lateinit var myVib: Vibrator
@@ -738,7 +738,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             KeyEvent.KEYCODE_VOLUME_DOWN -> {
                 if(client.isConnected){
                 if(seek.progress in 0..185){
-                val vol = seek.progress - 10
+                    val vol = seek.progress - 10
                     when {
                         seek.progress >= 100 -> {
                             sendCommand(vol.toString() + "vl")

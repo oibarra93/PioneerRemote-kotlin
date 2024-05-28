@@ -21,13 +21,13 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="Theme.PioneerRemote.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
+    <style name="Theme.PioneerRemote.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" tools:ignore="UnusedResources">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
 
 
-    <style name="Theme.PioneerRemote.PopupOverlay" parent="ThemeOverlay.AppCompat.Light">
+    <style name="Theme.PioneerRemote.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" tools:ignore="UnusedResources">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>

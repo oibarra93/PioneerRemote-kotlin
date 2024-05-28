@@ -26,21 +26,18 @@
             android:theme="@style/Theme.AppCompat.Light"
             android:translationZ="9000dp"/>
 
-        <FrameLayout
-            android:id="@+id/fragment_container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            />
+
     </LinearLayout>
 
-    <com.google.android.material.navigation.NavigationView
+        <com.google.android.material.navigation.NavigationView
         android:id="@+id/nav_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="start"
+        android:visibility="visible"
         app:headerLayout="@layout/nav_header"
         app:menu="@menu/drawer_menu"
-        />
+        tools:visibility="visible" />
 
 
     <FrameLayout
@@ -84,7 +81,6 @@
                     android:paddingEnd="2dp">
 
                     <TextView
-                        android:id="@+id/textView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
@@ -131,7 +127,6 @@
                     app:layout_constraintEnd_toStartOf="@+id/linearLayout">
 
                     <TextView
-                        android:id="@+id/textView2"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
