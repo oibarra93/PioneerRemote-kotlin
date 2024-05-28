@@ -79,7 +79,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
     }
 
-    @SuppressLint("SetTextI18n")
+    @SuppressLint("SetTextI18n", "CutPasteId")
     @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -155,43 +155,86 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 }
                 launch(Dispatchers.Main) {
                     if (client.isConnected) {
-                        when (input) {
-                            "FN04" -> inputGroup.check(R.id.btnDVD)
-                            "FN33" -> inputGroup.check(R.id.btnBT)
-                            "FN06" -> inputGroup.check(R.id.btnSat)
-                            "FN53" -> inputGroup.check(R.id.btnSpotify)
-                            "FN02" -> inputGroup.check(R.id.btnTuner)
-                            "FN05" -> inputGroup.check(R.id.btnTV)
-                            "FN25" -> inputGroup.check(R.id.btnBD)
-                            "FN17" -> inputGroup.check(R.id.btniPod)
-                            "FN34" -> inputGroup.check(R.id.btnMHL)
-                            "FN44" -> inputGroup.check(R.id.btnNet)
-                            "FN45" -> inputGroup.check(R.id.btnNet)
-                            "FN38" -> inputGroup.check(R.id.btnNet)
-                            "FN41" -> inputGroup.check(R.id.btnNet)
-                            "FN01" -> inputGroup.check(R.id.btnCD)
+                        val buttonText = when (input) {
+                            "FN04" -> {
+                                inputGroup.check(R.id.btnDVD)
+                                findViewById<Button>(R.id.btnDVD).text.toString()
+                            }
+                            "FN33" -> {
+                                inputGroup.check(R.id.btnBT)
+                                findViewById<Button>(R.id.btnBT).text.toString()
+                            }
+                            "FN06" -> {
+                                inputGroup.check(R.id.btnSat)
+                                findViewById<Button>(R.id.btnSat).text.toString()
+                            }
+                            "FN53" -> {
+                                inputGroup.check(R.id.btnSpotify)
+                                findViewById<Button>(R.id.btnSpotify).text.toString()
+                            }
+                            "FN02" -> {
+                                inputGroup.check(R.id.btnTuner)
+                                findViewById<Button>(R.id.btnTuner).text.toString()
+                            }
+                            "FN05" -> {
+                                inputGroup.check(R.id.btnTV)
+                                findViewById<Button>(R.id.btnTV).text.toString()
+                            }
+                            "FN25" -> {
+                                inputGroup.check(R.id.btnBD)
+                                findViewById<Button>(R.id.btnBD).text.toString()
+                            }
+                            "FN17" -> {
+                                inputGroup.check(R.id.btniPod)
+                                findViewById<Button>(R.id.btniPod).text.toString()
+                            }
+                            "FN34" -> {
+                                inputGroup.check(R.id.btnMHL)
+                                findViewById<Button>(R.id.btnMHL).text.toString()
+                            }
+                            "FN44", "FN45", "FN38", "FN41" -> {
+                                inputGroup.check(R.id.btnNet)
+                                findViewById<Button>(R.id.btnNet).text.toString()
+                            }
+                            "FN01" -> {
+                                inputGroup.check(R.id.btnCD)
+                                findViewById<Button>(R.id.btnCD).text.toString()
+                            }
                             "FN19" -> {
                                 inputGroup.check(R.id.btnHDMI)
-                                btnHDMI.text = "HDMI 1"
+                                val text = "HDMI 1"
+                                findViewById<Button>(R.id.btnHDMI).text = text
+                                text
                             }
                             "FN20" -> {
                                 inputGroup.check(R.id.btnHDMI)
-                                btnHDMI.text = "HDMI 2"
+                                val text = "HDMI 2"
+                                findViewById<Button>(R.id.btnHDMI).text = text
+                                text
                             }
                             "FN21" -> {
                                 inputGroup.check(R.id.btnHDMI)
-                                btnHDMI.text = "HDMI 3"
+                                val text = "HDMI 3"
+                                findViewById<Button>(R.id.btnHDMI).text = text
+                                text
                             }
                             "FN22" -> {
                                 inputGroup.check(R.id.btnHDMI)
-                                btnHDMI.text = "HDMI 4"
+                                val text = "HDMI 4"
+                                findViewById<Button>(R.id.btnHDMI).text = text
+                                text
                             }
                             "FN23" -> {
                                 inputGroup.check(R.id.btnHDMI)
-                                btnHDMI.text = "HDMI 5/MHL"
+                                val text = "HDMI 5/MHL"
+                                findViewById<Button>(R.id.btnHDMI).text = text
+                                text
+                            }
+                            else -> {
+                                "Unknown"
                             }
                         }
-                        txtOutput.text = txtOutput.text.toString() + "\nInput fetched $input"
+                        txtOutput.text = txtOutput.text.toString() + "\nInput fetched $buttonText"
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             myVib.vibrate(
                                 VibrationEffect.createOneShot(
@@ -208,13 +251,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     }
 
                     btnTogglePower.isChecked = power
-                    txtOutput.text = txtOutput.text.toString() + "\nPower is $power"
+                    txtOutput.text = txtOutput.text.toString() + "\nPower: ${if (power) "On" else "Off"}"
                     val extract = "[0-9]+".toRegex().find(volume)
                     val volumeval = extract?.value.toString()
                     seek.progress = volumeval.toInt()
-                    txtOutput.text = txtOutput.text.toString() + "\nVolume is $volumeval"
                     btnMute.isChecked = mute
-                    txtOutput.text = txtOutput.text.toString() + "\nMute is $mute"
+                    txtOutput.text = txtOutput.text.toString() + "\nMute: ${if (mute) "On" else "Off"}"
+                    txtOutput.text = txtOutput.text.toString() + "\nVolume is $volumeval"
                 }
 
             }
@@ -559,7 +602,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             txtOutput.text = txtOutput.text.toString() + "\n" + ip.toString()
             if (ip.size > 0) {
-                if (client.inetAddress?.toString() != ip[0] && client.port.toString() != ip[1]) {
+                if (client.inetAddress?.toString() != ip[0]) {
                     try {
                         client.close()
                         connect(ip).start()
