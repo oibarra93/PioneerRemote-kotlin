@@ -34,15 +34,10 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.navigation.NavigationView
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.NonCancellable.cancel
 import kotlinx.coroutines.Runnable
-import kotlinx.coroutines.async
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -55,7 +50,7 @@ import java.net.InetSocketAddress
 import java.net.Socket
 
 
-@Suppress("BlockingMethodInNonBlockingContext", "LABEL_NAME_CLASH", "DEPRECATION", "NAME_SHADOWING")
+@Suppress("DEPRECATION", "OPT_IN_IS_NOT_ENABLED")
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private lateinit var drawer: DrawerLayout
     private lateinit var myVib: Vibrator
@@ -534,7 +529,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         btnConnect.setOnClickListener {
         myVib.vibrate(50)
             ip.clear()
-            var autoIP = ""
             val textToAdd = txtInput.text.toString().split(" ", ":", limit = 0)
             if (textToAdd.size == 2) {
                 ip.add(textToAdd[0])
