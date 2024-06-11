@@ -3,11 +3,13 @@
 package com.beboe.pioneerremote
 
 import android.annotation.SuppressLint
+import android.os.PowerManager
+import android.content.Intent
+import android.os.Bundle
+import android.provider.Settings
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.os.Build
-import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.VibrationEffect
@@ -26,6 +28,7 @@ import android.widget.Toast
 import android.widget.ToggleButton
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
@@ -84,6 +87,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         drawer = findViewById(R.id.drawer_layout)
@@ -136,6 +140,31 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val mainLooper = Looper.getMainLooper()
         var ip: MutableList<String> = mutableListOf()
         var prefix: String
+
+        fun isAppIgnoringBatteryOptimizations(context: Context): Boolean {
+            val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+            return powerManager.isIgnoringBatteryOptimizations(context.packageName)
+        }
+
+        // Check if the app is ignoring battery optimization
+
+        fun showBatteryOptimizationDialog() {
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("Disable Battery Optimization")
+            builder.setMessage("To keep the connection stable, please disable battery optimization for this app." +
+                    "\nBattery Optimization -> All Apps -> Pioneer Remote -> Don't Optimize")
+            builder.setPositiveButton("OK") { dialog, _ ->
+                val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                startActivity(intent)
+                dialog.dismiss()
+            }
+            builder.setNegativeButton("Cancel") { dialog, _ ->
+                dialog.dismiss()
+            }
+            builder.create().show()
+        }
+        if (!isAppIgnoringBatteryOptimizations(this)) {
+        showBatteryOptimizationDialog()}
 
         @SuppressLint("SetTextI18n")
         @RequiresApi(Build.VERSION_CODES.O)
