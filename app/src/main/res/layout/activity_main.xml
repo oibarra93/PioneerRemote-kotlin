@@ -34,10 +34,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:visibility="visible"
+        android:visibility="invisible"
         app:headerLayout="@layout/nav_header"
         app:menu="@menu/drawer_menu"
-        tools:visibility="visible" />
+        tools:visibility="invisible" />
 
 
     <FrameLayout
@@ -360,14 +360,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
-                    android:duplicateParentState="false"
                     android:ems="10"
                     android:enabled="true"
                     android:fontFamily="@font/courier_prime"
                     android:gravity="bottom"
                     android:lines="8"
                     android:maxLines="8"
-                    android:nestedScrollingEnabled="false"
+                    android:nestedScrollingEnabled="true"
                     android:text="@string/response"
                     android:textAlignment="gravity"
                     android:textColor="#FFFFFF"

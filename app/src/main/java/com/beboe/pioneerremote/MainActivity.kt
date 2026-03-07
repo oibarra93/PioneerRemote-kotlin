@@ -73,6 +73,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             if (client.isConnected) {
                 try {
                     client.outputStream.write(("" + command + "\r").toByteArray())
+                    client.outputStream.flush()
                 } catch (e: IOException) {
                     Log.e("sendCommand", "Failed")
                 }
@@ -121,7 +122,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         inputGroup = findViewById(R.id.chipGroup)
         myVib = getSystemService(VIBRATOR_SERVICE) as Vibrator
 
+        // Ensure the TextView is selectable and can scroll within the ScrollView
         txtOutput.movementMethod = ScrollingMovementMethod()
+        txtOutput.setTextIsSelectable(true)
 
         val navigationView = findViewById<NavigationView>(R.id.nav_view)
         navigationView.setNavigationItemSelectedListener(this)
@@ -145,6 +148,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if (client.isConnected) {
             try {
                 client.outputStream.write(("" + command + "\r").toByteArray())
+                client.outputStream.flush()
                 text = BufferedReader(InputStreamReader(client.inputStream)).readLine()
             } catch (e: IOException) {
                 Log.e("sendCommand", "Failed")
@@ -156,6 +160,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     textView.text.toString() + "\n" + text + "\nSent " + command + " successfully"
                 Toast.makeText(this@MainActivity, "$command executed", Toast.LENGTH_SHORT)
                     .show()
+                val response = filterAndConvert(text)
+                txtOutput.append("\n" + response)
+                if (response != null) {
+                    Log.i("Response:",response)
+                }
+                txtOutput.textAlignment = View.TEXT_ALIGNMENT_GRAVITY
             } else {
                 textView.text = textView.text.toString() + "\n" + text + "\nNot connected!"
             }
@@ -206,6 +216,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 if (client.isConnected) {
                     val command = if (btnMute.isChecked) "mo" else "mf"
                     client.outputStream.write("$command\r".toByteArray())
+                    client.outputStream.flush()
                 }
                 withContext(Dispatchers.Main) {
                     txtOutput.append("\nMute ${if (btnMute.isChecked) "on" else "off"}")
@@ -297,7 +308,21 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             if (client.isConnected) {
                 try {
                     client.outputStream.write("$command\r".toByteArray())
-                    text = BufferedReader(InputStreamReader(client.inputStream)).readLine()
+                    client.outputStream.flush()
+                    // Read the complete response
+                    val reader = BufferedReader(InputStreamReader(client.inputStream))
+                    val responseBuilder = StringBuilder()
+
+                    // Adjust loop as needed to handle multi-line responses
+                    var line: String?
+                    while (true) {
+                        line = reader.readLine()
+                        if (line == null || line.isEmpty()) break // End of stream or empty line
+                        responseBuilder.append(line)
+                    }
+
+                    text = responseBuilder.toString()
+
                 } catch (e: IOException) {
                     Log.e("changeInput", "Failed to change input", e)
                 }
@@ -305,9 +330,59 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             withContext(Dispatchers.Main) {
                 textView.append("\n$text\nInput changed to $command")
                 Toast.makeText(this@MainActivity, "$command succeeded", Toast.LENGTH_SHORT).show()
+
+                // Check if the response is valid and process it
+                if (text.length > 4) {
+                    // Filter out specific strings if needed
+                        val response = filterAndConvert(text)
+                        textView.append("\n" +
+                                "Stereo response: $response")
+                        if (response != null) {
+                            Log.i("Response", response)
+                        }
+
+                } else {
+                    Log.i("Response", "Response too short: $text")
+                }
             }
         }
     }
+
+    // Function to process the input string
+    fun filterAndConvert(input: String): String? {
+        // Function to convert hex string to ASCII string
+        fun hexToAscii(hexStr: String): String {
+            val output = StringBuilder()
+            var i = 0
+            var hexStr = hexStr.substring(3)
+            while (i < hexStr.length) {
+                // Check if there are at least 2 characters left to process
+                if (i + 2 <= hexStr.length) {
+                    val str = hexStr.substring(i, i + 2)
+                    val decimal = str.toInt(16)
+                    output.append(decimal.toChar())
+                    i += 2
+                } else {
+                    // Handle cases where there's an odd number of characters
+                    // Optionally log or handle this case based on your needs
+                    break
+                }
+            }
+            return output.toString()
+        }
+
+
+        // Remove non-hexadecimal characters (like leading/trailing spaces)
+        val cleanedInput = input.replace(Regex("[^0-9A-Fa-f]"), "")
+
+        // Convert the cleaned string to ASCII
+        return if (cleanedInput.isNotEmpty()) {
+            hexToAscii(cleanedInput)
+        } else {
+            null // Return null if the resulting string is empty
+        }
+    }
+
 
     private fun fetchStatus() {
         lifecycleScope.launch(Dispatchers.IO) {
@@ -341,6 +416,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 try {
                     // Send command to fetch input status
                     client.outputStream.write("?f\r".toByteArray())
+                    client.outputStream.flush()
 
                     // Read response from the server
                     input = BufferedReader(InputStreamReader(client.inputStream)).readLine()
@@ -448,6 +524,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             if (client.isConnected) {
                 try {
                     client.outputStream.write("?$command\r".toByteArray())
+                    client.outputStream.flush()
                     response = BufferedReader(InputStreamReader(client.inputStream)).readLine()
                     if (condition(response)) {
                         result = true
@@ -468,6 +545,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             if (client.isConnected) {
                 try {
                     client.outputStream.write("?v\r".toByteArray())
+                    client.outputStream.flush()
                     val response = BufferedReader(InputStreamReader(client.inputStream)).readLine()
                     regex.find(response)?.let { match ->
                         volume = match.value
